@@ -1,16 +1,51 @@
+
+import Link from "next/link";
 import Image from "next/image";
 
 export default function Navbar() {
   return (
-    <nav className="flex items-center justify-between p-4 bg-zinc-50 dark:bg-black">    
-    <div className="flex items-center gap-4">
-        <ul className="flex gap-4">
-            <Image src="/logo.png" alt="Logo" width={32} height={32} />
-            <li><a href="/" className="hover:underline">Home</a></li>
-            <li><a href="/about" className="hover:underline">About</a></li>
-            <li><a href="/contact" className="hover:underline">Contact</a></li>
+    <nav className="flex items-center justify-between p-4 bg-zinc-50 dark:bg-black">
+      <div className="flex items-center gap-6">
+
+        {/* Logo */}
+        <Link href="/">
+          <Image
+            src="/LogoInnovateAcademy.png"
+            alt="Innovate Academy Logo"
+            width={40}
+            height={40}
+            priority
+          />
+        </Link>
+
+        {/* Menú de navegación */}
+        <ul className="flex items-center gap-6">
+          <li>
+            <Link href="/" className="hover:underline">
+              Inicio
+            </Link>
+          </li>
+
+      <li>
+        <Link href="/cursos" className="hover:underline">
+          Cursos
+        </Link>
+      </li>
+
+          <li>
+            <Link href="/about" className="hover:underline">
+              Sobre nosotros
+            </Link>
+          </li>
+
+          <li>
+            <Link href="/contact" className="hover:underline">
+              Contacto
+            </Link>
+          </li>
         </ul>
-    </div>
+
+      </div>
     </nav>
-  )
-  }
+  );
+}
