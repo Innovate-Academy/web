@@ -1,20 +1,8 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
-  output: "export",
-  basePath: "/web",
-  trailingSlash: true,
-  images: {
-    unoptimized: true,
-  },
-  turbopack: {
-    rules: {
-      "*.css": {
-        loaders: ["@tailwindcss/turbopack"],
-        as: "*.css",
-      },
-    },
-  },
+const nextConfig = {
+  output: 'export',
+  images: { unoptimized: true },
+  basePath: '/web',
+  assetPrefix: '/web/',
 };
 
 export default nextConfig;
