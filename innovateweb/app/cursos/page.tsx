@@ -17,21 +17,25 @@ export default function Cursos() {
 
   useEffect(() => {
     async function cargarCursos() {
-      const supabase = createClient();
+      try {
+        const supabase = createClient();
+        const { data, error } = await supabase
+          .from("cursos")
+          .select("id, nombre, descripcion")
+          .order("id", { ascending: true });
 
-      const { data, error } = await supabase
-        .from("cursos")
-        .select("id, nombre, descripcion")
-        .order("id", { ascending: true });
-
-      if (error) {
-        console.error("Error al cargar los cursos:", error);
+        if (error) {
+          console.error("Error al cargar los cursos:", error);
+          setError(true);
+        } else {
+          setCursos(data ?? []);
+        }
+      } catch (error) {
+        console.error("Error al inicializar la carga de cursos:", error);
         setError(true);
-      } else {
-        setCursos((data ?? []) as Curso[]);
+      } finally {
+        setLoading(false);
       }
-
-      setLoading(false);
     }
 
     cargarCursos();
