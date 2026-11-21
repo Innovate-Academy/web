@@ -1,8 +1,8 @@
 const nextConfig = {
   output: 'export',
   images: { unoptimized: true },
-  basePath: '/web',      // el nombre de tu repositorio
+  basePath: '/web',
   assetPrefix: '/web/',
 };
 
-export default nextConfig; // si usas .js con CommonJS: module.exports = nextConfig;
+export default nextConfig;
