@@ -1,12 +1,8 @@
-import type { NextConfig } from 'next'
-
-const nextConfig: NextConfig = {
+const nextConfig = {
   output: 'export',
-  basePath: '/web',
-  trailingSlash: true,
-  images: {
-    unoptimized: true,
-  },
-}
+  images: { unoptimized: true },
+  basePath: '/web',      // el nombre de tu repositorio
+  assetPrefix: '/web/',
+};
 
-export default nextConfig
+export default nextConfig; // si usas .js con CommonJS: module.exports = nextConfig;
