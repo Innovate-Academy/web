@@ -27,7 +27,8 @@ interface DiscordUser {
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [user, setUser] = useState<DiscordUser | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -50,6 +51,7 @@ export default function Navbar() {
   }, []);
 
   const handleLogout = async () => {
+    setUserMenuOpen(false);
     await fetch("/api/auth/logout", { method: "POST" });
     router.refresh();
   };
@@ -98,7 +100,7 @@ export default function Navbar() {
           ) : user ? (
             <div className="relative group">
               <button
-                onClick={() => setOpen((v) => !v)}
+                onClick={() => setUserMenuOpen((v) => !v)}
                 className="flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
               >
                 {user.avatar_url ? (
@@ -117,10 +119,11 @@ export default function Navbar() {
                 </span>
               </button>
 
-              {open && (
+              {userMenuOpen && (
                 <div className="absolute right-0 mt-2 w-48 rounded-lg border border-border bg-white p-2 shadow-lg z-50">
                   <a
                     href="/perfil"
+                    onClick={() => setUserMenuOpen(false)}
                     className="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded"
                   >
                     Ver perfil
@@ -146,21 +149,21 @@ export default function Navbar() {
 
         <button
           type="button"
-          onClick={() => setOpen((value) => !value)}
-          aria-expanded={open}
+          onClick={() => setMenuOpen((value) => !value)}
+          aria-expanded={menuOpen}
           className="text-sm font-semibold text-brand md:hidden"
         >
-          Menú {open ? "−" : "+"}
+          Menú {menuOpen ? "−" : "+"}
         </button>
       </nav>
 
-      {open && (
+      {menuOpen && (
         <ul className="flex flex-col gap-3 border-t border-border px-6 py-4 text-sm md:hidden">
           {LINKS.map((link) => (
             <li key={link.href}>
               <Link
                 href={link.href}
-                onClick={() => setOpen(false)}
+                onClick={() => setMenuOpen(false)}
                 className={pathname === link.href ? "font-semibold text-brand" : "text-muted"}
               >
                 {link.label}
@@ -168,7 +171,7 @@ export default function Navbar() {
             </li>
           ))}
           <li>
-            <Link href="/comunidad" onClick={() => setOpen(false)} className="text-muted">
+            <Link href="/comunidad" onClick={() => setMenuOpen(false)} className="text-muted">
               Comunidad
             </Link>
           </li>
@@ -176,7 +179,7 @@ export default function Navbar() {
             <li>
               <a
                 href="/login"
-                onClick={() => setOpen(false)}
+                onClick={() => setMenuOpen(false)}
                 className="block px-3 py-2 text-sm font-semibold text-brand hover:bg-gray-100 rounded"
               >
                 Iniciar sesión
@@ -187,7 +190,7 @@ export default function Navbar() {
               <li>
                 <a
                   href="/perfil"
-                  onClick={() => setOpen(false)}
+                  onClick={() => setMenuOpen(false)}
                   className="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded"
                 >
                   Ver perfil
