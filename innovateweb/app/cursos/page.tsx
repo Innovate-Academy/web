@@ -52,7 +52,23 @@ export default function Cursos() {
       }
     }
 
+    async function cargarMoneda() {
+      try {
+        const supabase = createClient();
+        const { data, error: supabaseError } = await supabase
+          .from("cursos")
+          .select("precio")
+          .single();
+        if (data) {
+          setMoneda(data.precio);
+        }
+      } catch (err) {
+        console.error("Error al cargar la moneda de referencia:", err);
+      }
+    }
+
     cargarCursos();
+    cargarMoneda();
   }, []);
 
   return (
