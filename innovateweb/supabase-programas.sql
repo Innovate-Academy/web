@@ -80,7 +80,7 @@ select setval('programas_id_seq', (select max(id) from programas));
 
 -- Actualizar curso HTML / CSS (id 3): precio, modalidades de pago y objetivo
 update cursos
-set precio = '960 € (pago único con 5 % desc.) / 240 € mensual x 4',
+set precio = 912,
     descripcion = 'Estructura y diseño web: crea páginas modernas y responsive.
 
 PRECIO Y MODALIDADES DE PAGO
