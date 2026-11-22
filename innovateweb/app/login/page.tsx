@@ -1,23 +1,30 @@
-import Link from "next/link";
-import { useEffect, useState } from "react";
+"use client";
+
+import { useSyncExternalStore } from "react";
+
+const MESSAGES: Record<string, string> = {
+  no_code: "No se recibió el código de autorización.",
+  token_failed: "Error al obtener el token de acceso.",
+  user_failed: "Error al obtener tu perfil de Discord.",
+  not_configured: "Discord OAuth no está configurado en el servidor.",
+  unexpected: "Ocurrió un error inesperado.",
+};
+
+function subscribe() {
+  return () => {};
+}
+
+function getSnapshot() {
+  return new URLSearchParams(window.location.search).get("error");
+}
+
+function getServerSnapshot() {
+  return null;
+}
 
 export default function Login() {
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const err = params.get("error");
-    if (err) {
-      const messages: Record<string, string> = {
-        no_code: "No se recibió el código de autorización.",
-        token_failed: "Error al obtener el token de acceso.",
-        user_failed: "Error al obtener tu perfil de Discord.",
-        not_configured: "Discord OAuth no está configurado en el servidor.",
-        unexpected: "Ocurrió un error inesperado.",
-      };
-      setError(messages[err] || "Error al iniciar sesión.");
-    }
-  }, []);
+  const errorCode = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const error = errorCode ? (MESSAGES[errorCode] ?? "Error al iniciar sesión.") : null;
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-background">
