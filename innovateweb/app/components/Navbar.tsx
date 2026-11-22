@@ -2,8 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, usePathname, useRouter, useState } from "react";
 
 const LINKS = [
   { href: "/", label: "Inicio" },
@@ -14,9 +13,45 @@ const LINKS = [
   { href: "/postula", label: "Postulaciones" },
 ];
 
+interface DiscordUser {
+  id: string;
+  username: string;
+  global_name: string | null;
+  avatar: string | null;
+  email: string | null;
+  discriminator: string;
+  avatar_url: string | null;
+}
+
 export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [user, setUser] = useState<DiscordUser | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchSession() {
+      try {
+        const res = await fetch("/api/auth/session", {
+          headers: { "Content-Type": "application/json" },
+        });
+        const data = await res.json();
+        setUser(data.user ?? null);
+      } catch {
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchSession();
+  }, []);
+
+  const handleLogout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.refresh();
+  };
 
   return (
     <header className="border-b border-border bg-background">
@@ -56,6 +91,58 @@ export default function Navbar() {
           Comunidad
         </Link>
 
+        <div className="flex items-center gap-3">
+          {loading ? (
+            <div className="w-2 h-2 rounded-full bg-brand animate-pulse" />
+          ) : user ? (
+            <div className="relative group">
+              <button
+                onClick={() => setOpen((v) => !v)}
+                className="flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
+              >
+                {user.avatar_url ? (
+                  <img
+                    src={user.avatar_url}
+                    alt={user.username}
+                    className="w-6 h-6 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-xs font-bold">
+                    {user.username.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <span className="ml-2 truncate max-w-[120px]">
+                  {user.global_name ?? user.username}
+                </span>
+              </button>
+
+              {open && (
+                <div className="absolute right-0 mt-2 w-48 rounded-lg border border-border bg-white p-2 shadow-lg z-50">
+                  <a
+                    href="/perfil"
+                    className="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded"
+                  >
+                    Ver perfil
+                  </a>
+                  <button
+                    onClick={handleLogout}
+                    className="block w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded"
+                  >
+                    Cerrar sesión
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <a
+              href="/login"
+              className="rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-hover transition-colors"
+            >
+              Iniciar sesión
+            </a>
+          )}
+        </div>
+
         <button
           type="button"
           onClick={() => setOpen((value) => !value)}
@@ -84,6 +171,37 @@ export default function Navbar() {
               Comunidad
             </Link>
           </li>
+          {loading || !user ? (
+            <li>
+              <a
+                href="/login"
+                onClick={() => setOpen(false)}
+                className="block px-3 py-2 text-sm font-semibold text-brand hover:bg-gray-100 rounded"
+              >
+                Iniciar sesión
+              </a>
+            </li>
+          ) : (
+            <>
+              <li>
+                <a
+                  href="/perfil"
+                  onClick={() => setOpen(false)}
+                  className="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded"
+                >
+                  Ver perfil
+                </a>
+              </li>
+              <li>
+                <button
+                  onClick={handleLogout}
+                  className="block w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded"
+                >
+                  Cerrar sesión
+                </button>
+              </li>
+            </>
+          )}
         </ul>
       )}
     </header>
