@@ -74,3 +74,17 @@ insert into programas (id, curso_id, mes, titulo, contenido, descripcion, orden)
 
 -- Resetear secuencia
 select setval('programas_id_seq', (select max(id) from programas));
+
+-- Actualizar curso HTML / CSS (id 3): precio, modalidades de pago y objetivo
+update cursos
+set precio = '960 € (pago único con 5 % desc.) / 240 € mensual x 4',
+    descripcion = 'Estructura y diseño web: crea páginas modernas y responsive.
+
+PRECIO Y MODALIDADES DE PAGO
+Opción 1. Pago mensual: 240 € / 264 USD / 5.030 MXN al mes · 4 mensualidades · Sin descuentos.
+Opción 2. Pago completo: 960 € / 1.055 USD / 20.117 MXN · Descuento 5 % · Precio final 912 € / 1.002 USD / 19.111 MXN.
+Los importes en dólares y pesos mexicanos son orientativos y pueden variar según el tipo de cambio.
+
+OBJETIVO DE LA FORMACIÓN
+Al finalizar el curso, habrás adquirido una base sólida en desarrollo web y podrás crear tus propias páginas, diseñar sus interfaces y añadir funcionalidades mediante JavaScript. La formación busca que comprendas los fundamentos de la programación y puedas aplicarlos de manera autónoma, sentando las bases para continuar aprendiendo y desarrollar proyectos más complejos.'
+where id = 3;
