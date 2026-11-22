@@ -13,9 +13,26 @@ interface DiscordUser {
   avatar_url: string | null;
 }
 
+interface Curso {
+  id: number | string;
+  slug: string;
+  nombre: string;
+  descripcion: string;
+  icono: string;
+  estado: string;
+  duracion_meses: number;
+  precio: string;
+  resultado: string;
+  programas: string[];
+  orden: number;
+  dispo: boolean;
+}
+
 export default function Perfil() {
   const [user, setUser] = useState<DiscordUser | null>(null);
+  const [courses, setCourses] = useState<Curso[]>([]);
   const [loading, setLoading] = useState(true);
+  const [coursesLoading, setCoursesLoading] = useState(true);
 
   useEffect(() => {
     async function fetchSession() {
@@ -34,6 +51,31 @@ export default function Perfil() {
 
     fetchSession();
   }, []);
+
+  useEffect(() => {
+    if (!user) {
+      setCourses([]);
+      setCoursesLoading(false);
+      return;
+    }
+
+    async function fetchCourses() {
+      setCoursesLoading(true);
+      try {
+        const res = await fetch("/api/user/courses", {
+          headers: { "Content-Type": "application/json" },
+        });
+        const data = await res.json();
+        setCourses(data.courses ?? []);
+      } catch {
+        setCourses([]);
+      } finally {
+        setCoursesLoading(false);
+      }
+    }
+
+    fetchCourses();
+  }, [user]);
 
   if (loading) {
     return (
@@ -136,22 +178,69 @@ export default function Perfil() {
 
           <div className="mt-8">
             <h3 className="text-lg font-bold text-foreground mb-4">
-              Tu estado en Innovate Academy
+              Tus cursos inscritos
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="rounded-lg border border-border bg-gray-50 p-4">
-                <p className="text-xs font-semibold text-muted uppercase tracking-wider">
-                  Cursos inscritos
-                </p>
-                <p className="mt-1 text-2xl font-bold text-foreground">0</p>
+            {coursesLoading ? (
+              <div className="flex items-center justify-center gap-3 text-sm text-muted py-8">
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-brand border-t-transparent" />
+                Cargando cursos...
               </div>
-              <div className="rounded-lg border border-brand bg-brand/50 p-4">
-                <p className="text-xs font-semibold text-brand uppercase tracking-wider">
-                  Miembro de la comunidad
+            ) : courses.length === 0 ? (
+              <div className="rounded-lg border border-border bg-gray-50 p-8 text-center">
+                <p className="font-semibold text-foreground">No tienes cursos inscritos</p>
+                <p className="mt-2 text-sm text-muted">
+                  Explora el catálogo e inscríbete en tus primeros cursos.
                 </p>
-                <p className="mt-1 text-sm text-brand">Activo</p>
+                <Link
+                  href="/cursos"
+                  className="mt-4 inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-hover transition-colors"
+                >
+                  Ver cursos disponibles
+                </Link>
               </div>
-            </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-4">
+                {courses.map((curso) => (
+                  <article
+                    key={curso.id}
+                    className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-xl border border-border bg-white p-6 transition-colors ${
+                      !curso.dispo ? "opacity-70" : ""
+                    }`}
+                  >
+                    <div className="flex items-center gap-4 min-w-0">
+                      <div className="w-14 h-14 rounded-xl bg-brand/10 flex items-center justify-center shrink-0">
+                        <span className="text-2xl">{curso.icono || "📚"}</span>
+                      </div>
+                      <div className="min-w-0">
+                        <h4 className="font-bold text-foreground truncate">
+                          {curso.nombre}
+                        </h4>
+                        <p className="mt-1 text-sm text-muted truncate">
+                          {curso.descripcion}
+                        </p>
+                        <div className="mt-2 flex items-center gap-3 text-xs text-muted">
+                          <span>{curso.duracion_meses} meses</span>
+                          <span className="font-semibold text-foreground">
+                            ${curso.precio}
+                          </span>
+                          {!curso.dispo && (
+                            <span className="text-red-600 font-medium">No disponible</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <a
+                        href={`/cursos/${curso.slug}`}
+                        className="rounded-lg bg-border px-4 py-2 text-sm font-medium text-muted hover:bg-gray-100 transition-colors"
+                      >
+                        Ver curso
+                      </a>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="mt-8 rounded-lg border border-border bg-gray-50 p-6">
