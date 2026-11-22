@@ -1,7 +1,3 @@
-import { Resend } from "resend";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -13,20 +9,6 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
-
-    const emailHtml = `
-      <h2>Nuevo mensaje de soporte</h2>
-      <p><strong>Nombre:</strong> ${name}</p>
-      <p><strong>Correo:</strong> ${email}</p>
-      <p><strong>Mensaje:</strong><br>${message}</p>
-    `;
-
-    const emailPromise = resend.emails.send({
-      from: "Innovate Academy <soporte@resend.dev>",
-      to: [process.env.EMAIL_TO!],
-      subject: `Nuevo mensaje de soporte de ${name}`,
-      html: emailHtml,
-    });
 
     const discordPayload = {
       embeds: [
@@ -44,13 +26,19 @@ export async function POST(req: Request) {
       ],
     };
 
-    const discordPromise = fetch(process.env.DISCORD_WEBHOOK_URL!, {
+    const response = await fetch(process.env.DISCORD_WEBHOOK_URL!, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(discordPayload),
     });
 
-    await Promise.all([emailPromise, discordPromise]);
+    if (!response.ok) {
+      console.error("Discord webhook error:", response.status);
+      return Response.json(
+        { error: "Error al enviar a Discord" },
+        { status: 500 }
+      );
+    }
 
     return Response.json({ success: true });
   } catch (error) {
