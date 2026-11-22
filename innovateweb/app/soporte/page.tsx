@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 export default function Soporte() {
@@ -48,12 +49,12 @@ export default function Soporte() {
         <p className="text-sm text-muted max-w-xl mx-auto">
           Gracias por contactarnos. Te responderemos a la brevedad posible.
         </p>
-        <a
+        <Link
           href="/"
           className="mt-6 inline-block text-sm font-semibold text-brand hover:text-brand-hover"
         >
           Volver al inicio →
-        </a>
+        </Link>
       </main>
     );
   }
@@ -151,7 +152,7 @@ export default function Soporte() {
               ¿Cómo me inscribo a un curso?
             </dt>
             <dd className="mt-1 text-sm text-muted">
-              Elige el curso que te interesa, haz clic en "Inscribirse" y
+              Elige el curso que te interesa, haz clic en &quot;Inscribirse&quot; y
               completa el proceso de pago.
             </dd>
           </div>
