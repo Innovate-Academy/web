@@ -176,12 +176,20 @@ async function ProfesorDashboardContent() {
               Bienvenido, {profesor.nombre}
             </p>
           </div>
-          <Link
-            href="/cursos"
-            className="rounded-lg bg-brand px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-hover transition-colors"
-          >
-            Ver catálogo
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/mis-cursos"
+              className="rounded-lg border border-border bg-white px-5 py-2.5 text-sm font-medium text-muted hover:bg-gray-50 transition-colors"
+            >
+              Ver como alumno
+            </Link>
+            <Link
+              href="/cursos"
+              className="rounded-lg bg-brand px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-hover transition-colors"
+            >
+              Ver catálogo
+            </Link>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
