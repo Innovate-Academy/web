@@ -5,10 +5,12 @@ import { useState } from "react";
 export default function Soporte() {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState(false);
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    setLoading(true);
+    setLoading(false);
+    setError(false);
 
     const formData = new FormData(event.currentTarget);
     const name = formData.get("name") as string;
@@ -16,11 +18,19 @@ export default function Soporte() {
     const message = formData.get("message") as string;
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      console.log("Soporte enviado:", { name, email, message });
+      const response = await fetch("/api/soporte", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, message }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Error al enviar");
+      }
+
       setSubmitted(true);
     } catch {
-      console.error("Error al enviar el formulario de soporte");
+      setError(true);
     } finally {
       setLoading(false);
     }
@@ -64,8 +74,13 @@ export default function Soporte() {
         </p>
       </section>
 
+      {error && (
+        <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          No se pudo enviar el mensaje. Intenta de nuevo.
+        </div>
+      )}
+
       <form
-        action=""
         onSubmit={handleSubmit}
         className="max-w-2xl rounded-xl border border-border bg-white p-8 shadow-sm"
       >
