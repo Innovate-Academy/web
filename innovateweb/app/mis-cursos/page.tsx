@@ -1,6 +1,5 @@
-"use client";
-
-import { useEffect, useState } from "react";
+import { cookies } from "next/headers";
+import { createServerClient } from "@supabase/ssr";
 import Link from "next/link";
 
 interface DiscordUser {
@@ -28,65 +27,76 @@ interface Curso {
   dispo: boolean;
 }
 
-export default function MisCursos() {
-  const [user, setUser] = useState<DiscordUser | null>(null);
-  const [courses, setCourses] = useState<Curso[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [coursesLoading, setCoursesLoading] = useState(true);
+async function getSession(): Promise<DiscordUser | null> {
+  const cookieStore = await cookies();
+  const session = cookieStore.get("session");
 
-  useEffect(() => {
-    async function fetchSession() {
-      try {
-        const res = await fetch("/api/auth/session", {
-          headers: { "Content-Type": "application/json" },
-        });
-        const data = await res.json();
-        setUser(data.user ?? null);
-      } catch {
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    }
+  if (!session) return null;
 
-    fetchSession();
-  }, []);
-
-  useEffect(() => {
-    if (!user) {
-      setCourses([]);
-      setCoursesLoading(false);
-      return;
-    }
-
-    async function fetchCourses() {
-      setCoursesLoading(true);
-      try {
-        const res = await fetch("/api/user/courses", {
-          headers: { "Content-Type": "application/json" },
-        });
-        const data = await res.json();
-        setCourses(data.courses ?? []);
-      } catch {
-        setCourses([]);
-      } finally {
-        setCoursesLoading(false);
-      }
-    }
-
-    fetchCourses();
-  }, [user]);
-
-  if (loading) {
-    return (
-      <main className="min-h-screen flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-4 border-brand border-t-transparent rounded-full animate-spin" />
-          <p className="text-muted text-sm">Cargando...</p>
-        </div>
-      </main>
-    );
+  try {
+    return JSON.parse(session.value);
+  } catch {
+    return null;
   }
+}
+
+async function getUserCourses(userId: string): Promise<Curso[]> {
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              cookieStore.set(name, value, options);
+            });
+          } catch {
+            // Server Components can't modify cookies
+          }
+        },
+      },
+    }
+  );
+
+  const { data: enrollments, error } = await supabase
+    .from("inscripciones")
+    .select(`
+      curso_id,
+      creado_en,
+      cursos (
+        id,
+        slug,
+        nombre,
+        descripcion,
+        icono,
+        estado,
+        duracion_meses,
+        precio,
+        resultado,
+        programas,
+        orden,
+        dispo
+      )
+    `)
+    .eq("user_id", userId)
+    .order("creado_en", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching courses:", error);
+    return [];
+  }
+
+  return (enrollments ?? []).map((e) => e.cursos).filter(Boolean) as Curso[];
+}
+
+async function MisCursosContent() {
+  const user = await getSession();
+  const courses = user ? await getUserCourses(user.id) : [];
 
   if (!user) {
     return (
@@ -101,12 +111,12 @@ export default function MisCursos() {
           <p className="text-muted mb-6">
             Necesitas estar autenticado con Discord para acceder a tus cursos inscritos.
           </p>
-          <a
+          <Link
             href="/login"
             className="inline-flex items-center justify-center gap-2 w-full rounded-lg bg-brand px-4 py-3 text-sm font-semibold text-white hover:bg-brand-hover transition-colors"
           >
             Iniciar sesión con Discord
-          </a>
+          </Link>
         </div>
       </main>
     );
@@ -124,12 +134,7 @@ export default function MisCursos() {
           </p>
         </div>
 
-        {coursesLoading ? (
-          <div className="flex items-center justify-center gap-3 text-sm text-muted py-12">
-            <span className="h-6 w-6 animate-spin rounded-full border-2 border-brand border-t-transparent" />
-            Cargando tus cursos...
-          </div>
-        ) : courses.length === 0 ? (
+        {courses.length === 0 ? (
           <div className="rounded-xl border border-border bg-white p-12 text-center">
             <div className="w-20 h-20 rounded-full bg-brand/10 flex items-center justify-center mx-auto mb-6 text-4xl">
               📚
@@ -188,12 +193,12 @@ export default function MisCursos() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <a
+                  <Link
                     href={`/cursos/${curso.slug}`}
                     className="rounded-lg bg-brand px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-hover transition-colors"
                   >
                     Continuar aprendiendo
-                  </a>
+                  </Link>
                 </div>
               </article>
             ))}
@@ -203,3 +208,5 @@ export default function MisCursos() {
     </main>
   );
 }
+
+export default MisCursosContent;
