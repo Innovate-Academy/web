@@ -9,10 +9,18 @@ interface Curso {
   slug: string;
   nombre: string;
   descripcion: string;
+  icono: string;
+  estado: string;
+  created_at: string;
   duracion_meses: number;
+  precio: string;
+  resultado: string;
+  programas: string[];
+  orden: number;
+  profe_id: string | null;
+  Link_videollamada: string | null;
+  dispo: boolean;
 }
-
-const MONEDAS = ["USD", "EUR", "GBP", "CLP", "ARS", "UYU", "MXN", "PEN", "COP", "BOB"];
 
 const PACKS = [
   { tag: "PACK / 01", nombre: "Web Starter" },
@@ -24,11 +32,6 @@ export default function Cursos() {
   const [cursos, setCursos] = useState<Curso[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const [moneda, setMoneda] = useState<string | null>(null);
-
-  function seleccionarMoneda(codigo: string) {
-    setMoneda(codigo);
-  }
 
   useEffect(() => {
     async function cargarCursos() {
@@ -70,33 +73,6 @@ export default function Cursos() {
           Nueve cursos para construir tu camino en programación. Elige un curso
           completo o explora nuestros packs.
         </p>
-
-        <div className="mt-8 rounded-xl bg-panel px-5 py-5">
-          <p className="text-xs font-semibold">
-            Moneda de referencia · Seleccionar
-          </p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {MONEDAS.map((codigo) => (
-              <button
-                key={codigo}
-                type="button"
-                onClick={() => seleccionarMoneda(codigo)}
-                aria-pressed={moneda === codigo}
-                className={`rounded-md border px-3 py-1.5 text-xs font-medium ${
-                  moneda === codigo
-                    ? "border-brand bg-brand text-white"
-                    : "border-border bg-background text-foreground"
-                }`}
-              >
-                {codigo}
-              </button>
-            ))}
-          </div>
-          <p className="mt-3 text-[11px] text-muted">
-            {moneda ? `Moneda de referencia: ${moneda}. ` : ""}
-            Moneda de cobro e impuestos pendientes de confirmación.
-          </p>
-        </div>
       </section>
 
       <section className="max-w-6xl mx-auto px-6 pb-16">
@@ -122,7 +98,9 @@ export default function Cursos() {
             {cursos.map((curso) => (
               <article
                 key={curso.id}
-                className="flex flex-col rounded-xl border border-border bg-white p-6 transition duration-[400ms] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform hover:-translate-y-1 hover:scale-[1.015] hover:border-brand/30 hover:shadow-[0_20px_45px_-12px_rgba(15,23,42,0.28)] hover:ring-1 hover:ring-brand/10 motion-reduce:transform-none motion-reduce:transition-none"
+                className={`flex flex-col rounded-xl border border-border bg-white p-6 transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform hover:-translate-y-0.5 hover:scale-[1.015] hover:shadow-xl motion-reduce:transform-none motion-reduce:transition-none ${
+                  !curso.dispo ? "opacity-70 grayscale-[0.6]" : ""
+                }`}
               >
                 <p className="text-xs font-semibold text-brand">
                   {curso.duracion_meses} meses
@@ -134,23 +112,33 @@ export default function Cursos() {
                   {curso.descripcion}
                 </p>
 
-                <p className="mt-6 font-semibold">Precio por confirmar</p>
+                <p className="mt-6 font-semibold text-gray-900">
+                  ${curso.precio}
+                </p>
                 <p className="mt-1 text-[11px] text-muted">
                   Pago único por curso completo
                 </p>
 
-                <button
-                  type="button"
-                  className="mt-5 w-full rounded-lg bg-brand py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-hover"
-                >
-                  Inscribirse
-                </button>
-                <button
-                  type="button"
-                  className="mt-3 self-start text-xs font-semibold text-brand transition-colors hover:text-brand-hover"
-                >
-                  Ver programa →
-                </button>
+                {!curso.dispo ? (
+                  <p className="mt-5 self-start text-xs font-semibold text-red-600">
+                    No disponible
+                  </p>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      className="mt-5 w-full rounded-lg bg-brand py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-hover"
+                    >
+                      Inscribirse
+                    </button>
+                    <button
+                      type="button"
+                      className="mt-3 self-start text-xs font-semibold text-brand transition-colors hover:text-brand-hover"
+                    >
+                      Ver programa →
+                    </button>
+                  </>
+                )}
               </article>
             ))}
           </div>
@@ -167,14 +155,14 @@ export default function Cursos() {
           {PACKS.map((pack) => (
             <article
               key={pack.tag}
-              className="rounded-xl border border-transparent bg-panel p-6 transition duration-[400ms] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform hover:-translate-y-1 hover:scale-[1.015] hover:border-brand/30 hover:shadow-[0_20px_45px_-12px_rgba(15,23,42,0.28)] hover:ring-1 hover:ring-brand/10 motion-reduce:transform-none motion-reduce:transition-none"
+              className="rounded-xl bg-panel p-6 transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform hover:-translate-y-0.5 hover:scale-[1.015] hover:shadow-xl motion-reduce:transform-none motion-reduce:transition-none"
             >
               <p className="text-[11px] font-semibold text-brand">{pack.tag}</p>
               <h3 className="mt-2 text-lg font-bold">{pack.nombre}</h3>
               <p className="mt-2 text-sm text-muted">
                 Consulta los cursos incluidos antes de elegir tu pack.
               </p>
-              <p className="mt-6 font-semibold">Precio por confirmar</p>
+              <p className="mt-6 font-semibold text-gray-900">Precio por confirmar</p>
               <button
                 type="button"
                 className="mt-5 w-full rounded-lg bg-brand py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-hover"
