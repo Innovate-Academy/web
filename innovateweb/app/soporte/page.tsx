@@ -7,9 +7,9 @@ export default function Soporte() {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState(false);
 
-  async function handleSubmit(event: React.FormEvent) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setLoading(false);
+    setLoading(true);
     setError(false);
 
     const formData = new FormData(event.currentTarget);
