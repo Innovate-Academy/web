@@ -40,6 +40,38 @@ async function getSession(): Promise<DiscordUser | null> {
   }
 }
 
+async function isProfesor(userId: string): Promise<boolean> {
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              cookieStore.set(name, value, options);
+            });
+          } catch {
+            // Server Components can't modify cookies
+          }
+        },
+      },
+    }
+  );
+
+  const { data } = await supabase
+    .from("profesores")
+    .select("id")
+    .eq("user_id", userId)
+    .single();
+
+  return !!data;
+}
+
 async function getUserCourses(userId: string): Promise<Curso[]> {
   const cookieStore = await cookies();
   const supabase = createServerClient(
@@ -100,6 +132,7 @@ async function getUserCourses(userId: string): Promise<Curso[]> {
 async function MisCursosContent() {
   const user = await getSession();
   const courses = user ? await getUserCourses(user.id) : [];
+  const profesor = user ? await isProfesor(user.id) : false;
 
   if (!user) {
     return (
@@ -128,13 +161,23 @@ async function MisCursosContent() {
   return (
     <main className="min-h-screen bg-background py-8">
       <div className="max-w-4xl mx-auto px-6">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">
-            Mis cursos
-          </h1>
-          <p className="mt-2 text-muted">
-            {courses.length} curso{courses.length !== 1 ? "s" : ""} inscrito{courses.length !== 1 ? "s" : ""}
-          </p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">
+              Mis cursos
+            </h1>
+            <p className="mt-2 text-muted">
+              {courses.length} curso{courses.length !== 1 ? "s" : ""} inscrito{courses.length !== 1 ? "s" : ""}
+            </p>
+          </div>
+          {profesor && (
+            <Link
+              href="/dashboard/profesor"
+              className="rounded-lg bg-brand px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-hover transition-colors"
+            >
+              Ver como profesor
+            </Link>
+          )}
         </div>
 
         {courses.length === 0 ? (
