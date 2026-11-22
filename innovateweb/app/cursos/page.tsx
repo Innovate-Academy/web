@@ -61,9 +61,12 @@ export default function Cursos() {
       {loading ? (
         <p>Cargando cursos...</p>
       ) : error ? (
-        <p className="text-red-600">
-          No se pudieron cargar los cursos.
-        </p>
+        <div className="text-red-600 space-y-2">
+          <p>No se pudieron cargar los cursos.</p>
+          <p className="text-sm text-gray-500">
+            Revisa la consola del navegador para más detalles.
+          </p>
+        </div>
       ) : cursos.length === 0 ? (
         <p className="text-gray-600">
           No hay cursos disponibles actualmente.
