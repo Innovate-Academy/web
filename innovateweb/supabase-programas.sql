@@ -1,5 +1,5 @@
 -- Tabla de programas/módulos de cursos
-create table programas (
+create table if not exists programas (
   id bigserial primary key,
   curso_id bigint not null references cursos(id) on delete cascade,
   mes integer not null,
@@ -70,7 +70,8 @@ insert into programas (id, curso_id, mes, titulo, contenido, descripcion, orden)
 -- Curso 9: C++
 (24, 9, 1, 'Mes 1', 'Sintaxis, variables, tipos de datos, operadores, condicionales, bucles, funciones, arrays y punteros.', null, 1),
 (25, 9, 2, 'Mes 2', 'Referencias, memoria dinámica, struct, clases, POO, herencia, polimorfismo, plantillas y STL.', null, 2),
-(26, 9, 3, 'Mes 3', 'Archivos, excepciones, algoritmos, estructuras de datos, buenas prácticas, Git, optimización y proyecto final.', null, 3);
+(26, 9, 3, 'Mes 3', 'Archivos, excepciones, algoritmos, estructuras de datos, buenas prácticas, Git, optimización y proyecto final.', null, 3)
+on conflict (id) do nothing;
 
 -- Resetear secuencia
 select setval('programas_id_seq', (select max(id) from programas));
