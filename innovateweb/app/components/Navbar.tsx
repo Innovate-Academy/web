@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 const LINKS = [
   { href: "/", label: "Inicio" },
   { href: "/cursos", label: "Cursos" },
-  { href: "/mis-cursos", label: "Mis cursos" },
+  { href: "/dashboard", label: "Mi panel" },
   { href: "/sobre-nosotros", label: "Sobre nosotros" },
   { href: "/soporte", label: "Soporte" },
   { href: "/postula", label: "Postulaciones" },
@@ -122,6 +122,13 @@ export default function Navbar() {
               {userMenuOpen && (
                 <div className="absolute right-0 mt-2 w-48 rounded-lg border border-border bg-white p-2 shadow-lg z-50">
                   <a
+                    href="/dashboard"
+                    onClick={() => setUserMenuOpen(false)}
+                    className="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded"
+                  >
+                    Mi panel
+                  </a>
+                  <a
                     href="/perfil"
                     onClick={() => setUserMenuOpen(false)}
                     className="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded"
@@ -187,6 +194,15 @@ export default function Navbar() {
             </li>
           ) : (
             <>
+              <li>
+                <a
+                  href="/dashboard"
+                  onClick={() => setMenuOpen(false)}
+                  className="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded"
+                >
+                  Mi panel
+                </a>
+              </li>
               <li>
                 <a
                   href="/perfil"
