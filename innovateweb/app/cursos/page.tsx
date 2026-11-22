@@ -1,13 +1,24 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
 import { createClient } from "../utils/supabase/client";
 
 interface Curso {
-  id: string | number;
-  nombre: string | null;
-  descripcion: string | null;
+  id: number;
+  slug: string;
+  nombre: string;
+  descripcion: string;
+  icono: string;
+  estado: string;
+  created_at: string;
+  duracion_meses: number;
+  precio: string;
+  resultado: string;
+  programas: string[];
+  orden: number;
+  profe_id: string | null;
+  Link_videollamada: string | null;
+  dispo: boolean;
 }
 
 export default function Cursos() {
@@ -19,19 +30,19 @@ export default function Cursos() {
     async function cargarCursos() {
       try {
         const supabase = createClient();
-        const { data, error } = await supabase
+        const { data, error: supabaseError } = await supabase
           .from("cursos")
-          .select("id, nombre, descripcion")
-          .order("id", { ascending: true });
+          .select("*")
+          .order("orden", { ascending: true });
 
-        if (error) {
-          console.error("Error al cargar los cursos:", error);
+        if (supabaseError) {
+          console.error("Error al cargar los cursos:", supabaseError);
           setError(true);
         } else {
-          setCursos(data ?? []);
+          setCursos((data ?? []) as Curso[]);
         }
-      } catch (error) {
-        console.error("Error al inicializar la carga de cursos:", error);
+      } catch (err) {
+        console.error("Error al inicializar la carga de cursos:", err);
         setError(true);
       } finally {
         setLoading(false);
@@ -62,15 +73,47 @@ export default function Cursos() {
           {cursos.map((curso) => (
             <article
               key={curso.id}
-              className="p-6 rounded-xl border shadow-sm"
+              className={`p-6 rounded-xl border shadow-sm ${
+                !curso.dispo ? "opacity-50 grayscale" : ""
+              }`}
             >
-              <h2 className="text-2xl font-semibold mb-2">
-                {curso.nombre ?? "Curso sin título"}
+              {typeof curso.icono === "string" && curso.icono.startsWith("http") ? (
+                <img
+                  src={curso.icono}
+                  alt={curso.nombre}
+                  className="w-16 h-16 mb-4 object-contain"
+                />
+              ) : (
+                <span className="text-2xl font-bold block mb-2">
+                  {curso.icono}
+                </span>
+              )}
+              <h2 className="text-xl font-semibold mb-2">
+                {curso.nombre}
               </h2>
-
-              <p className="text-gray-600">
-                {curso.descripcion ?? "Sin descripción disponible."}
+              <p className="text-gray-600 text-sm mb-3 line-clamp-3">
+                {curso.descripcion}
               </p>
+              <p className="text-xs text-gray-500 mb-1">
+                Duración: {curso.duracion_meses} meses
+              </p>
+              <p className="text-sm font-medium text-gray-800 mb-2">
+                ${curso.precio}
+              </p>
+              <p className="text-xs text-gray-400 mb-3">
+                Programas: {curso.programas.join(", ")}
+              </p>
+              {!curso.dispo && (
+                <p className="text-xs text-red-600 font-medium mb-3">
+                  No disponible
+                </p>
+              )}
+              <a
+                href={`/cursos/${curso.slug}`}
+                className="text-sm text-blue-600 hover:underline"
+              >
+                Ver detalle
+              </a>
             </article>
           ))}
         </div>
