@@ -131,12 +131,12 @@ export default function Cursos() {
                     >
                       Inscribirse
                     </button>
-                    <button
-                      type="button"
+                    <Link
+                      href={`/cursos/${curso.slug}/programa`}
                       className="mt-3 self-start text-xs font-semibold text-brand transition-colors hover:text-brand-hover"
                     >
                       Ver programa →
-                    </button>
+                    </Link>
                   </>
                 )}
               </article>
