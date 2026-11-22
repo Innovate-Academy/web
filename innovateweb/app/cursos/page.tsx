@@ -122,7 +122,7 @@ export default function Cursos() {
             {cursos.map((curso) => (
               <article
                 key={curso.id}
-                className="flex flex-col rounded-xl border border-border bg-white p-6 transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform hover:-translate-y-0.5 hover:scale-[1.015] hover:shadow-xl motion-reduce:transform-none motion-reduce:transition-none"
+                className="flex flex-col rounded-xl border border-border bg-white p-6 transition duration-[400ms] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform hover:-translate-y-1 hover:scale-[1.015] hover:border-brand/30 hover:shadow-[0_20px_45px_-12px_rgba(15,23,42,0.28)] hover:ring-1 hover:ring-brand/10 motion-reduce:transform-none motion-reduce:transition-none"
               >
                 <p className="text-xs font-semibold text-brand">
                   {curso.duracion_meses} meses
@@ -167,7 +167,7 @@ export default function Cursos() {
           {PACKS.map((pack) => (
             <article
               key={pack.tag}
-              className="rounded-xl bg-panel p-6 transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform hover:-translate-y-0.5 hover:scale-[1.015] hover:shadow-xl motion-reduce:transform-none motion-reduce:transition-none"
+              className="rounded-xl border border-transparent bg-panel p-6 transition duration-[400ms] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform hover:-translate-y-1 hover:scale-[1.015] hover:border-brand/30 hover:shadow-[0_20px_45px_-12px_rgba(15,23,42,0.28)] hover:ring-1 hover:ring-brand/10 motion-reduce:transform-none motion-reduce:transition-none"
             >
               <p className="text-[11px] font-semibold text-brand">{pack.tag}</p>
               <h3 className="mt-2 text-lg font-bold">{pack.nombre}</h3>
