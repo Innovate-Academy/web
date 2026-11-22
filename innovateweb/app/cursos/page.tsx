@@ -25,6 +25,7 @@ export default function Cursos() {
   const [cursos, setCursos] = useState<Curso[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     async function cargarCursos() {
@@ -38,12 +39,14 @@ export default function Cursos() {
         if (supabaseError) {
           console.error("Error al cargar los cursos:", supabaseError);
           setError(true);
+          setErrorMessage(supabaseError.message ?? "Error desconocido de Supabase");
         } else {
           setCursos((data ?? []) as Curso[]);
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error("Error al inicializar la carga de cursos:", err);
         setError(true);
+        setErrorMessage(err.message ?? "Error inesperado");
       } finally {
         setLoading(false);
       }
@@ -61,10 +64,11 @@ export default function Cursos() {
       {loading ? (
         <p>Cargando cursos...</p>
       ) : error ? (
-        <div className="text-red-600 space-y-2">
-          <p>No se pudieron cargar los cursos.</p>
-          <p className="text-sm text-gray-500">
-            Revisa la consola del navegador para más detalles.
+        <div className="text-red-600 space-y-2 p-4 border border-red-200 rounded-lg bg-red-50">
+          <p className="font-semibold">No se pudieron cargar los cursos.</p>
+          <p className="text-sm text-gray-700 mb-2">{errorMessage}</p>
+          <p className="text-xs text-gray-500">
+            Configura las variables de entorno en Vercel y habilita RLS en Supabase.
           </p>
         </div>
       ) : cursos.length === 0 ? (
