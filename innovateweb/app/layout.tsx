@@ -4,7 +4,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 
 export const metadata: Metadata = {
-  title: "Cursos | Innovate Academy",
+  title: "Innovate Academy",
   description:
     "Nueve cursos para construir tu camino en programación. Elige un curso completo o explora nuestros packs.",
 };
