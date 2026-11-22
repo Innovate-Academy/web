@@ -40,7 +40,7 @@ async function getSession(): Promise<DiscordUser | null> {
   }
 }
 
-async function isProfesor(userId: string): Promise<boolean> {
+async function getProfesorId(userId: string): Promise<string | null> {
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -69,10 +69,10 @@ async function isProfesor(userId: string): Promise<boolean> {
     .eq("user_id", userId)
     .single();
 
-  return !!data;
+  return data?.id ?? null;
 }
 
-async function getUserCourses(userId: string): Promise<Curso[]> {
+async function getEnrolledCourses(userId: string): Promise<Curso[]> {
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -119,7 +119,7 @@ async function getUserCourses(userId: string): Promise<Curso[]> {
     .order("creado_en", { ascending: false });
 
   if (error) {
-    console.error("Error fetching courses:", error);
+    console.error("Error fetching enrolled courses:", error);
     return [];
   }
 
@@ -129,10 +129,45 @@ async function getUserCourses(userId: string): Promise<Curso[]> {
   });
 }
 
+async function getTeachingCourses(profesorId: string): Promise<Curso[]> {
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              cookieStore.set(name, value, options);
+            });
+          } catch {
+            // Server Components can't modify cookies
+          }
+        },
+      },
+    }
+  );
+
+  const { data: cursos, error } = await supabase
+    .from("cursos")
+    .select("id, slug, nombre, descripcion, icono, estado, duracion_meses, precio, resultado, programas, orden, dispo")
+    .eq("profe_id", profesorId)
+    .order("orden", { ascending: true });
+
+  if (error) {
+    console.error("Error fetching teaching courses:", error);
+    return [];
+  }
+
+  return (cursos ?? []) as Curso[];
+}
+
 async function MisCursosContent() {
   const user = await getSession();
-  const courses = user ? await getUserCourses(user.id) : [];
-  const profesor = user ? await isProfesor(user.id) : false;
 
   if (!user) {
     return (
@@ -158,6 +193,20 @@ async function MisCursosContent() {
     );
   }
 
+  const profesorId = await getProfesorId(user.id);
+  const isProfesor = !!profesorId;
+
+  const [enrolledCourses, teachingCourses] = await Promise.all([
+    getEnrolledCourses(user.id),
+    isProfesor ? getTeachingCourses(profesorId!) : Promise.resolve([]),
+  ]);
+
+  // Combine unique courses (by id)
+  const allCoursesMap = new Map<string, Curso>();
+  enrolledCourses.forEach((c) => allCoursesMap.set(String(c.id), c));
+  teachingCourses.forEach((c) => allCoursesMap.set(String(c.id), c));
+  const allCourses = Array.from(allCoursesMap.values());
+
   return (
     <main className="min-h-screen bg-background py-8">
       <div className="max-w-4xl mx-auto px-6">
@@ -167,29 +216,36 @@ async function MisCursosContent() {
               Mis cursos
             </h1>
             <p className="mt-2 text-muted">
-              {courses.length} curso{courses.length !== 1 ? "s" : ""} inscrito{courses.length !== 1 ? "s" : ""}
+              {allCourses.length} curso{allCourses.length !== 1 ? "s" : ""} total
+              {isProfesor && (
+                <span className="ml-2">
+                  ({enrolledCourses.length} inscritos, {teachingCourses.length} impartiendo)
+                </span>
+              )}
             </p>
           </div>
-          {profesor && (
+          {isProfesor && (
             <Link
               href="/dashboard/profesor"
               className="rounded-lg bg-brand px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-hover transition-colors"
             >
-              Ver como profesor
+              Panel de profesor
             </Link>
           )}
         </div>
 
-        {courses.length === 0 ? (
+        {allCourses.length === 0 ? (
           <div className="rounded-xl border border-border bg-white p-12 text-center">
             <div className="w-20 h-20 rounded-full bg-brand/10 flex items-center justify-center mx-auto mb-6 text-4xl">
               📚
             </div>
             <h2 className="text-xl font-bold text-foreground mb-2">
-              No tienes cursos inscritos aún
+              No tienes cursos aún
             </h2>
             <p className="text-muted mb-8 max-w-md mx-auto">
-              Explora nuestro catálogo y encuentra el curso perfecto para ti.
+              {isProfesor
+                ? "No tienes cursos asignados como profesor ni inscripciones como alumno."
+                : "Explora nuestro catálogo y encuentra el curso perfecto para ti."}
             </p>
             <Link
               href="/cursos"
@@ -199,56 +255,136 @@ async function MisCursosContent() {
             </Link>
           </div>
         ) : (
-          <div className="space-y-4">
-            {courses.map((curso) => (
-              <article
-                key={curso.id}
-                className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-xl border border-border bg-white p-6 transition-colors hover:border-brand/30 hover:shadow-lg ${
-                  !curso.dispo ? "opacity-70" : ""
-                }`}
-              >
-                <div className="flex items-center gap-4 min-w-0">
-                  <div className="w-16 h-16 rounded-xl bg-brand/10 flex items-center justify-center shrink-0">
-                    <span className="text-3xl">{curso.icono || "📚"}</span>
-                  </div>
-                  <div className="min-w-0">
-                    <h3 className="font-bold text-foreground truncate">
-                      {curso.nombre}
-                    </h3>
-                    <p className="mt-1 text-sm text-muted truncate">
-                      {curso.descripcion}
-                    </p>
-                    <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-muted">
-                      <span className="flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-brand" />
-                        {curso.duracion_meses} meses
-                      </span>
-                      <span className="font-semibold text-foreground">
-                        ${curso.precio}
-                      </span>
-                      <span
-                        className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                          curso.dispo
-                            ? "bg-green-100 text-green-700"
-                            : "bg-red-100 text-red-700"
-                        }`}
-                      >
-                        {curso.dispo ? "Disponible" : "No disponible"}
-                      </span>
-                    </div>
-                  </div>
+          <>
+            {enrolledCourses.length > 0 && (
+              <div className="mb-8">
+                <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-green-500" />
+                  Inscritos como alumno ({enrolledCourses.length})
+                </h2>
+                <div className="space-y-4">
+                  {enrolledCourses.map((curso) => (
+                    <article
+                      key={`enrolled-${curso.id}`}
+                      className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-xl border border-border bg-white p-6 transition-colors hover:border-brand/30 hover:shadow-lg ${
+                        !curso.dispo ? "opacity-70" : ""
+                      }`}
+                    >
+                      <div className="flex items-center gap-4 min-w-0">
+                        <div className="w-16 h-16 rounded-xl bg-green-100 flex items-center justify-center shrink-0">
+                          <span className="text-3xl">{curso.icono || "📚"}</span>
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="font-bold text-foreground truncate">
+                            {curso.nombre}
+                          </h3>
+                          <p className="mt-1 text-sm text-muted truncate">
+                            {curso.descripcion}
+                          </p>
+                          <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-muted">
+                            <span className="flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-brand" />
+                              {curso.duracion_meses} meses
+                            </span>
+                            <span className="font-semibold text-foreground">
+                              ${curso.precio}
+                            </span>
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                                curso.dispo
+                                  ? "bg-green-100 text-green-700"
+                                  : "bg-red-100 text-red-700"
+                              }`}
+                            >
+                              {curso.dispo ? "Disponible" : "No disponible"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <Link
+                          href={`/cursos/${curso.slug}`}
+                          className="rounded-lg bg-brand px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-hover transition-colors"
+                        >
+                          Continuar aprendiendo
+                        </Link>
+                      </div>
+                    </article>
+                  ))}
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <Link
-                    href={`/cursos/${curso.slug}`}
-                    className="rounded-lg bg-brand px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-hover transition-colors"
-                  >
-                    Continuar aprendiendo
-                  </Link>
+              </div>
+            )}
+
+            {teachingCourses.length > 0 && (
+              <div>
+                <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-brand" />
+                  Impartiendo como profesor ({teachingCourses.length})
+                </h2>
+                <div className="space-y-4">
+                  {teachingCourses.map((curso) => (
+                    <article
+                      key={`teaching-${curso.id}`}
+                      className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-xl border border-brand/30 bg-brand/5 p-6 transition-colors hover:border-brand/50 hover:shadow-lg ${
+                        !curso.dispo ? "opacity-70" : ""
+                      }`}
+                    >
+                      <div className="flex items-center gap-4 min-w-0">
+                        <div className="w-16 h-16 rounded-xl bg-brand/20 flex items-center justify-center shrink-0">
+                          <span className="text-3xl">{curso.icono || "📚"}</span>
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-bold text-foreground truncate">
+                              {curso.nombre}
+                            </h3>
+                            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-brand/20 text-brand">
+                              Profesor
+                            </span>
+                          </div>
+                          <p className="mt-1 text-sm text-muted truncate">
+                            {curso.descripcion}
+                          </p>
+                          <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-muted">
+                            <span className="flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-brand" />
+                              {curso.duracion_meses} meses
+                            </span>
+                            <span className="font-semibold text-foreground">
+                              ${curso.precio}
+                            </span>
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                                curso.dispo
+                                  ? "bg-green-100 text-green-700"
+                                  : "bg-red-100 text-red-700"
+                              }`}
+                            >
+                              {curso.dispo ? "Disponible" : "No disponible"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <Link
+                          href={`/dashboard/profesor`}
+                          className="rounded-lg bg-brand px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-hover transition-colors"
+                        >
+                          Gestionar curso
+                        </Link>
+                        <Link
+                          href={`/cursos/${curso.slug}`}
+                          className="rounded-lg border border-border bg-white px-5 py-2.5 text-sm font-semibold text-muted hover:bg-gray-50 transition-colors"
+                        >
+                          Ver como alumno
+                        </Link>
+                      </div>
+                    </article>
+                  ))}
                 </div>
-              </article>
-            ))}
-          </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </main>
