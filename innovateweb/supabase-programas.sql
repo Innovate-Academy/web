@@ -14,12 +14,14 @@ create table if not exists programas (
 alter table programas enable row level security;
 
 -- Políticas
+drop policy if exists "Cualquiera puede ver programas de cursos publicados" on programas;
 create policy "Cualquiera puede ver programas de cursos publicados"
   on programas for select
   using (
     curso_id in (select id from cursos where dispo = true)
   );
 
+drop policy if exists "Profesores pueden gestionar programas de sus cursos" on programas;
 create policy "Profesores pueden gestionar programas de sus cursos"
   on programas for all
   using (
@@ -31,8 +33,8 @@ create policy "Profesores pueden gestionar programas de sus cursos"
   );
 
 -- Índices
-create index idx_programas_curso_id on programas(curso_id);
-create index idx_programas_curso_mes on programas(curso_id, mes);
+create index if not exists idx_programas_curso_id on programas(curso_id);
+create index if not exists idx_programas_curso_mes on programas(curso_id, mes);
 
 -- Insertar datos del JSON (cursos reales: 1-9)
 insert into programas (id, curso_id, mes, titulo, contenido, descripcion, orden) values
