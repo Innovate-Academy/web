@@ -1,18 +1,25 @@
-const isVercel = process.env.VERCEL === '1';
+import type { NextConfig } from "next";
 
-const nextConfig = {
-  output: 'export',
-  images: { unoptimized: true },
-  env: {
-    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://eorctlkxihvxynooadfg.supabase.co',
-    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_TDXWsduFZhO_pEFinzozLg_u5_pqbJc',
+const nextConfig: NextConfig = {
+  images: {
+    unoptimized: true,
   },
-  ...(isVercel
-    ? {}
-    : {
-        basePath: '/web',
-        assetPrefix: '/web/',
-      }),
+  turbopack: {
+    rules: {
+      "*.css": {
+        loaders: ["@tailwindcss/turbopack"],
+        as: "*.css",
+      },
+    },
+  },
+  env: {
+    NEXT_PUBLIC_SUPABASE_URL:
+      process.env.NEXT_PUBLIC_SUPABASE_URL ||
+      "https://eorctlkxihvxynooadfg.supabase.co",
+    NEXT_PUBLIC_SUPABASE_ANON_KEY:
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+      "sb_publishable_TDXWsduFZhO_pEFinzozLg_u5_pqbJc",
+  },
 };
 
 export default nextConfig;
