@@ -91,7 +91,10 @@ async function getUserCourses(userId: string): Promise<Curso[]> {
     return [];
   }
 
-  return (enrollments ?? []).map((e) => e.cursos).filter(Boolean) as Curso[];
+  return (enrollments ?? []).flatMap((enrollment) => {
+    const curso = enrollment.cursos;
+    return (Array.isArray(curso) ? curso : curso ? [curso] : []) as unknown as Curso[];
+  });
 }
 
 async function MisCursosContent() {
