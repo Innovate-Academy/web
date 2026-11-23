@@ -32,6 +32,13 @@ export default function Cursos() {
   const [cursos, setCursos] = useState<Curso[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedCurso, setSelectedCurso] = useState<Curso | null>(null);
+  const [formName, setFormName] = useState("");
+  const [formEmail, setFormEmail] = useState("");
+  const [formDiscord, setFormDiscord] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
     async function cargarCursos() {
@@ -127,6 +134,14 @@ export default function Cursos() {
                   <>
                     <button
                       type="button"
+                      onClick={() => {
+                        setSelectedCurso(curso);
+                        setSubmitted(false);
+                        setFormName("");
+                        setFormEmail("");
+                        setFormDiscord("");
+                        setModalOpen(true);
+                      }}
                       className="mt-5 w-full rounded-lg bg-brand py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-hover"
                     >
                       Inscribirse
@@ -189,6 +204,114 @@ export default function Cursos() {
           Hablar con Soporte →
         </Link>
       </section>
+      {modalOpen && selectedCurso && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-xl border border-border bg-white p-6 shadow-xl">
+            {submitted ? (
+              <div className="text-center">
+                <p className="text-lg font-bold text-foreground">¡Inscripción enviada!</p>
+                <p className="mt-2 text-sm text-muted">
+                  Nos pondremos en contacto contigo pronto para el curso{" "}
+                  <strong>{selectedCurso.nombre}</strong>.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setModalOpen(false)}
+                  className="mt-6 w-full rounded-lg bg-brand py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-hover"
+                >
+                  Cerrar
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-bold text-foreground">
+                    Inscribirse a {selectedCurso.nombre}
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => setModalOpen(false)}
+                    className="text-muted hover:text-foreground"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <form
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    setSubmitting(true);
+                    try {
+                      const res = await fetch("/api/inscripcion", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          name: formName,
+                          email: formEmail,
+                          discord: formDiscord,
+                          cursoNombre: selectedCurso.nombre,
+                          cursoSlug: selectedCurso.slug,
+                        }),
+                      });
+                      if (res.ok) {
+                        setSubmitted(true);
+                      }
+                    } catch {
+                      // ignore
+                    } finally {
+                      setSubmitting(false);
+                    }
+                  }}
+                  className="space-y-4"
+                >
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1">
+                      Nombre *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={formName}
+                      onChange={(e) => setFormName(e.target.value)}
+                      className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1">
+                      Correo *
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={formEmail}
+                      onChange={(e) => setFormEmail(e.target.value)}
+                      className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1">
+                      Usuario de Discord (opcional)
+                    </label>
+                    <input
+                      type="text"
+                      value={formDiscord}
+                      onChange={(e) => setFormDiscord(e.target.value)}
+                      className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="w-full rounded-lg bg-brand py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-hover disabled:opacity-60"
+                  >
+                    {submitting ? "Enviando..." : "Enviar inscripción"}
+                  </button>
+                </form>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
     </main>
   );
 }
