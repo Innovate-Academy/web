@@ -1,4 +1,30 @@
+import { cookies } from "next/headers";
+import { createServerClient } from "@supabase/ssr";
 import { Resend } from "resend";
+
+async function getSupabaseClient() {
+  const cookieStore = await cookies();
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              cookieStore.set(name, value, options);
+            });
+          } catch {
+            // Server Components can't modify cookies
+          }
+        },
+      },
+    }
+  );
+}
 
 export async function POST(req: Request) {
   try {
@@ -10,6 +36,21 @@ export async function POST(req: Request) {
         { error: "Faltan campos requeridos" },
         { status: 400 }
       );
+    }
+
+    // Guardar en Supabase
+    const supabase = await getSupabaseClient();
+    const { error: dbError } = await supabase
+      .from("inscripciones_formulario")
+      .insert({
+        nombre: name,
+        email: email,
+        discord: discord || null,
+        curso_slug: cursoSlug || null,
+      });
+
+    if (dbError) {
+      console.error("Supabase insert error:", dbError);
     }
 
     const discordPayload = {
