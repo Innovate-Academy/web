@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import Faq from "./components/Faq";
 
@@ -80,9 +81,12 @@ export default function Home() {
             <div className="mt-8 inline-flex items-center gap-3 rounded-lg border border-border bg-white px-3 py-2">
               <span className="text-[11px] text-muted">Patrocinado por</span>
               <span className="flex items-center gap-1.5">
-                <span className="flex h-5 w-5 items-center justify-center rounded bg-gradient-to-br from-sky-500 to-indigo-500 text-[10px] font-bold text-white">
-                  S
-                </span>
+                <Image
+                  src="/solarcloud.svg"
+                  alt=""
+                  width={22}
+                  height={22}
+                />
                 <span className="text-xs font-semibold">SolarCloud</span>
               </span>
             </div>
