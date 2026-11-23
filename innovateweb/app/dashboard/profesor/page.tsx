@@ -28,15 +28,15 @@ interface Curso {
   dispo: boolean;
 }
 
-interface Alumno {
-  id: string;
-  username: string;
-  global_name: string | null;
-  avatar_url: string | null;
-  email: string | null;
-  inscrito_en: string;
-  curso_nombre: string;
-  curso_slug: string;
+interface Inscripcion {
+  id: number | string;
+  user_id: string;
+  creado_en: string;
+  cursos: {
+    id: number | string;
+    slug: string;
+    nombre: string;
+  };
 }
 
 async function getSession(): Promise<{ user: DiscordUser | null; profesor: Profesor | null }> {
@@ -130,7 +130,7 @@ async function getProfesorData(profesorId: number) {
 
   return {
     cursos: (cursos ?? []) as Curso[],
-    inscripciones: (inscripciones ?? []) as any[],
+    inscripciones: (inscripciones ?? []) as unknown as Inscripcion[],
     stats: { totalAlumnos, totalCursos },
   };
 }

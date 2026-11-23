@@ -53,11 +53,7 @@ export default function Perfil() {
   }, []);
 
   useEffect(() => {
-    if (!user) {
-      setCourses([]);
-      setCoursesLoading(false);
-      return;
-    }
+    if (!user) return;
 
     async function fetchCourses() {
       setCoursesLoading(true);
