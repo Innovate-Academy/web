@@ -61,7 +61,7 @@ export default function Navbar() {
       <nav className="max-w-6xl mx-auto flex h-16 items-center justify-between px-6">
         <Link href="/" className="flex items-center gap-2.5">
           <Image
-            src="/LogoInnovateAcademy.png"
+            src="/LogoInnovateAcademy.svg"
             alt="Innovate Academy"
             width={40}
             height={40}

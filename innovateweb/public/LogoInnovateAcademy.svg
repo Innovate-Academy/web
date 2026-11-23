@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Innovate Academy">
+  <defs>
+    <linearGradient id="fondo" x1="40" y1="20" x2="470" y2="500" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2B1B72" />
+      <stop offset="0.42" stop-color="#2E45B8" />
+      <stop offset="1" stop-color="#1284DC" />
+    </linearGradient>
+    <radialGradient id="brillo" cx="0" cy="0" r="1" gradientTransform="translate(256 440) scale(250 170)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#61C8FF" stop-opacity="0.85" />
+      <stop offset="1" stop-color="#61C8FF" stop-opacity="0" />
+    </radialGradient>
+    <clipPath id="redondeado">
+      <rect width="512" height="512" rx="92" />
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#redondeado)">
+    <rect width="512" height="512" fill="url(#fondo)" />
+    <ellipse cx="256" cy="440" rx="250" ry="170" fill="url(#brillo)" />
+  </g>
+
+  <path
+    d="M62 292 C 165 316, 330 312, 438 250 C 456 240, 466 227, 458 220 C 449 213, 436 231, 424 243"
+    fill="none"
+    stroke="#CFEFFF"
+    stroke-width="15"
+    stroke-linecap="round"
+  />
+
+  <g fill="#E7F8FF" font-family="Arial, Helvetica, sans-serif" font-weight="bold">
+    <text x="118" y="258" font-size="132">&lt;</text>
+    <text x="318" y="258" font-size="132">&gt;</text>
+    <rect x="243" y="132" width="28" height="152" rx="14" transform="rotate(-19 257 208)" />
+  </g>
+
+  <text
+    x="256"
+    y="372"
+    text-anchor="middle"
+    font-family="Arial Black, Arial, Helvetica, sans-serif"
+    font-weight="900"
+    font-size="76"
+    letter-spacing="1"
+    fill="#FFFFFF"
+  >INNOVATE</text>
+
+  <text
+    x="256"
+    y="426"
+    text-anchor="middle"
+    font-family="Arial, Helvetica, sans-serif"
+    font-weight="700"
+    font-size="30"
+    letter-spacing="16"
+    fill="#A9D9F5"
+  >ACADEMY</text>
+</svg>
