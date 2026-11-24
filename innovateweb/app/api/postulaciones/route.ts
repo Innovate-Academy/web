@@ -25,6 +25,12 @@ function escapeHtml(value: string) {
 export async function POST(req: Request) {
   const apiKey = process.env.RESEND_API_KEY;
 
+  console.log("Postulación - config:", {
+    tieneApiKey: Boolean(apiKey),
+    from: POSTULACIONES_FROM,
+    to: POSTULACIONES_TO,
+  });
+
   if (!apiKey) {
     console.error("Falta la variable de entorno RESEND_API_KEY");
     return Response.json(
@@ -117,7 +123,7 @@ export async function POST(req: Request) {
     if (error) {
       console.error("Resend error:", error);
       return Response.json(
-        { error: "No se pudo enviar la postulación." },
+        { error: `Resend: ${error.message ?? "error desconocido"}` },
         { status: 502 }
       );
     }
@@ -126,7 +132,11 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("Error al enviar la postulación:", error);
     return Response.json(
-      { error: "No se pudo enviar la postulación." },
+      {
+        error: `No se pudo enviar: ${
+          error instanceof Error ? error.message : "error desconocido"
+        }`,
+      },
       { status: 500 }
     );
   }
