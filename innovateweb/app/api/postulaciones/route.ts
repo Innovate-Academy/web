@@ -1,3 +1,6 @@
+// FormSubmit requiere activar el formulario una sola vez: la primera peticion
+// envia un correo con un enlace "Activate Form" a POSTULACIONES_TO. Hasta que
+// se confirme ese enlace, los correos de postulacion no se entregan.
 const POSTULACIONES_TO =
   process.env.POSTULACIONES_TO ?? "alec.alvarez.lobato@gmail.com";
 
