@@ -20,14 +20,15 @@ export default function Footer() {
       <div className="max-w-6xl mx-auto px-6 py-10">
         <div className="grid gap-10 md:grid-cols-3">
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5">
               <Image
                 src="/LogoInnovateAcademy.png"
                 alt="Innovate Academy"
-                width={28}
-                height={28}
+                width={40}
+                height={40}
+                className="rounded-md"
               />
-              <span className="text-sm font-semibold">Innovate Academy</span>
+              <span className="text-base font-semibold">Innovate Academy</span>
             </div>
             <p className="mt-3 text-xs text-muted">
               Aprende a programar paso a paso.

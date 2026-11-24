@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="SolarCloud">
+  <defs>
+    <linearGradient id="sol" x1="32" y1="10" x2="32" y2="38" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F7C65C" />
+      <stop offset="1" stop-color="#E09A35" />
+    </linearGradient>
+    <linearGradient id="nube" x1="32" y1="30" x2="32" y2="50" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8CA0B5" />
+      <stop offset="1" stop-color="#50677D" />
+    </linearGradient>
+  </defs>
+  <circle cx="32" cy="25" r="14" fill="url(#sol)" />
+  <g fill="url(#nube)">
+    <circle cx="21" cy="40" r="9" />
+    <circle cx="32" cy="35" r="11" />
+    <circle cx="43" cy="40" r="8" />
+    <rect x="14" y="40" width="36" height="9" rx="4.5" />
+  </g>
+  <path d="M17 44.5c3-1.8 6-2.6 9-2.6" stroke="#EEF3F8" stroke-width="2" stroke-linecap="round" opacity="0.7" />
+</svg>

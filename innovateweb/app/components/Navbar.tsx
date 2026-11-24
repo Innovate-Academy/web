@@ -59,15 +59,18 @@ export default function Navbar() {
   return (
     <header className="border-b border-border bg-background">
       <nav className="max-w-6xl mx-auto flex h-16 items-center justify-between px-6">
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2.5">
           <Image
             src="/LogoInnovateAcademy.png"
             alt="Innovate Academy"
-            width={32}
-            height={32}
+            width={40}
+            height={40}
+            className="rounded-md"
             priority
           />
-          <span className="text-sm font-semibold">Innovate Academy</span>
+          <span className="text-lg font-semibold tracking-tight">
+            Innovate Academy
+          </span>
         </Link>
 
         <ul className="hidden items-center gap-6 text-sm md:flex">
