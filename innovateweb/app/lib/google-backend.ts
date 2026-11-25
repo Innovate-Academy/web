@@ -3,7 +3,9 @@
 
 // Pega aqui la URL del despliegue de Apps Script si no usas variables de
 // entorno: "https://script.google.com/macros/s/XXXX/exec"
-const GOOGLE_SCRIPT_URL = process.env.GOOGLE_SCRIPT_URL ?? "";
+const GOOGLE_SCRIPT_URL =
+  process.env.GOOGLE_SCRIPT_URL ??
+  "https://script.google.com/macros/s/AKfycbzj9IjFrfNIeJ0BfcwNQiYM4lGSAVivJ8oNESZ5Z06QCkAnqEdJdB6r2ENGtQihX9KQ/exec";
 const GOOGLE_SCRIPT_KEY =
   process.env.GOOGLE_SCRIPT_KEY ?? "innovate-academy-google-key";
 
