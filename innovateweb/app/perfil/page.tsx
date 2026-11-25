@@ -3,34 +3,33 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-interface DiscordUser {
+interface GoogleUser {
   id: string;
-  username: string;
-  global_name: string | null;
-  avatar: string | null;
-  email: string | null;
-  discriminator: string;
-  avatar_url: string | null;
+  email: string;
+  name: string;
+  picture: string | null;
 }
 
-interface Curso {
-  id: number | string;
-  slug: string;
+interface Enrollment {
+  id: string;
+  fecha: string;
   nombre: string;
-  descripcion: string;
-  icono: string;
+  email: string;
+  curso: string;
+  slug: string;
   estado: string;
-  duracion_meses: number;
-  precio: string;
-  resultado: string;
-  programas: string[];
-  orden: number;
-  dispo: boolean;
+  actualizado: string;
 }
+
+const ESTADO_CLASE: Record<string, string> = {
+  "En espera": "bg-amber-100 text-amber-800",
+  Cursando: "bg-emerald-100 text-emerald-700",
+  Completado: "bg-brand/10 text-brand",
+};
 
 export default function Perfil() {
-  const [user, setUser] = useState<DiscordUser | null>(null);
-  const [courses, setCourses] = useState<Curso[]>([]);
+  const [user, setUser] = useState<GoogleUser | null>(null);
+  const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
   const [loading, setLoading] = useState(true);
   const [coursesLoading, setCoursesLoading] = useState(true);
 
@@ -58,13 +57,14 @@ export default function Perfil() {
     async function fetchCourses() {
       setCoursesLoading(true);
       try {
-        const res = await fetch("/api/user/courses", {
+        const res = await fetch("/api/mis-cursos", {
           headers: { "Content-Type": "application/json" },
+          cache: "no-store",
         });
         const data = await res.json();
-        setCourses(data.courses ?? []);
+        setEnrollments(data.enrollments ?? []);
       } catch {
-        setCourses([]);
+        setEnrollments([]);
       } finally {
         setCoursesLoading(false);
       }
@@ -95,14 +95,15 @@ export default function Perfil() {
             No has iniciado sesión
           </h1>
           <p className="text-muted mb-6">
-            Inicia sesión con Discord para ver tu perfil y gestionar tus cursos.
+            Entra con tu cuenta de Google para ver tu perfil y gestionar tus
+            cursos.
           </p>
-          <a
-            href="/login"
+          <Link
+            href="/login?next=/perfil"
             className="inline-flex items-center justify-center gap-2 w-full rounded-lg bg-brand px-4 py-3 text-sm font-semibold text-white hover:bg-brand-hover transition-colors"
           >
-            Iniciar sesión con Discord
-          </a>
+            Continuar con Google
+          </Link>
         </div>
       </main>
     );
@@ -111,7 +112,7 @@ export default function Perfil() {
   return (
     <main className="min-h-screen bg-background py-8">
       <div className="max-w-2xl mx-auto px-6">
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-foreground">
               Tu perfil
@@ -121,12 +122,12 @@ export default function Perfil() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <a
+            <Link
               href="/cursos"
               className="rounded-lg bg-border px-4 py-2.5 text-sm font-medium text-muted hover:bg-gray-100 transition-colors"
             >
               Ver cursos
-            </a>
+            </Link>
             <button
               onClick={async () => {
                 await fetch("/api/auth/logout", { method: "POST" });
@@ -141,51 +142,55 @@ export default function Perfil() {
 
         <div className="rounded-xl border border-border bg-white p-8 shadow-sm">
           <div className="flex items-center gap-6">
-            <div className="relative">
-              {user.avatar_url ? (
-                <img
-                  src={user.avatar_url}
-                  alt={user.username}
-                  className="w-24 h-24 rounded-full object-cover border-4 border-brand"
-                />
-              ) : (
-                <div className="w-24 h-24 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-4xl font-bold">
-                  {user.username.charAt(0).toUpperCase()}
-                </div>
-              )}
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold text-foreground">
-                {user.global_name ?? user.username}
+            {user.picture ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={user.picture}
+                alt={user.name}
+                className="w-24 h-24 rounded-full object-cover border-4 border-brand"
+              />
+            ) : (
+              <div className="w-24 h-24 rounded-full bg-brand/10 flex items-center justify-center text-brand text-4xl font-bold">
+                {user.name.charAt(0).toUpperCase()}
+              </div>
+            )}
+            <div className="min-w-0">
+              <h2 className="text-2xl font-bold text-foreground truncate">
+                {user.name}
               </h2>
-              <p className="mt-1 text-sm text-muted">
-                @{user.username}#{user.discriminator}
-              </p>
-              {user.email && (
-                <p className="mt-1 text-sm text-muted">
-                  {user.email}
-                </p>
-              )}
-              <p className="mt-2 text-xs text-muted">
-                ID de Discord: {user.id}
-              </p>
+              <p className="mt-1 text-sm text-muted truncate">{user.email}</p>
+              <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-semibold text-gray-700">
+                <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                Cuenta de Google
+              </span>
             </div>
           </div>
 
           <div className="mt-8">
-            <h3 className="text-lg font-bold text-foreground mb-4">
-              Tus cursos inscritos
-            </h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-bold text-foreground">
+                Tus cursos inscritos
+              </h3>
+              <Link
+                href="/mis-cursos"
+                className="text-xs font-semibold text-brand hover:text-brand-hover"
+              >
+                Ver panel completo →
+              </Link>
+            </div>
+
             {coursesLoading ? (
               <div className="flex items-center justify-center gap-3 text-sm text-muted py-8">
                 <span className="h-4 w-4 animate-spin rounded-full border-2 border-brand border-t-transparent" />
                 Cargando cursos...
               </div>
-            ) : courses.length === 0 ? (
-              <div className="rounded-lg border border-border bg-gray-50 p-8 text-center">
-                <p className="font-semibold text-foreground">No tienes cursos inscritos</p>
+            ) : enrollments.length === 0 ? (
+              <div className="mt-4 rounded-lg border border-border bg-gray-50 p-8 text-center">
+                <p className="font-semibold text-foreground">
+                  No tienes cursos inscritos
+                </p>
                 <p className="mt-2 text-sm text-muted">
-                  Explora el catálogo e inscríbete en tus primeros cursos.
+                  Explora el catálogo e inscríbete en tu primer curso.
                 </p>
                 <Link
                   href="/cursos"
@@ -195,44 +200,36 @@ export default function Perfil() {
                 </Link>
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-4">
-                {courses.map((curso) => (
+              <div className="mt-4 grid grid-cols-1 gap-4">
+                {enrollments.map((item) => (
                   <article
-                    key={curso.id}
-                    className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-xl border border-border bg-white p-6 transition-colors ${
-                      !curso.dispo ? "opacity-70" : ""
-                    }`}
+                    key={item.id}
+                    className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-xl border border-border bg-white p-6"
                   >
-                    <div className="flex items-center gap-4 min-w-0">
-                      <div className="w-14 h-14 rounded-xl bg-brand/10 flex items-center justify-center shrink-0">
-                        <span className="text-2xl">{curso.icono || "📚"}</span>
-                      </div>
-                      <div className="min-w-0">
-                        <h4 className="font-bold text-foreground truncate">
-                          {curso.nombre}
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h4 className="font-bold text-foreground">
+                          {item.curso}
                         </h4>
-                        <p className="mt-1 text-sm text-muted truncate">
-                          {curso.descripcion}
-                        </p>
-                        <div className="mt-2 flex items-center gap-3 text-xs text-muted">
-                          <span>{curso.duracion_meses} meses</span>
-                          <span className="font-semibold text-foreground">
-                            ${curso.precio}
-                          </span>
-                          {!curso.dispo && (
-                            <span className="text-red-600 font-medium">No disponible</span>
-                          )}
-                        </div>
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                            ESTADO_CLASE[item.estado] ??
+                            "bg-gray-100 text-gray-700"
+                          }`}
+                        >
+                          {item.estado}
+                        </span>
                       </div>
+                      <p className="mt-1 text-xs text-muted">
+                        Inscrito el {formatearFecha(item.fecha)}
+                      </p>
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <a
-                        href={`/cursos/${curso.slug}`}
-                        className="rounded-lg bg-border px-4 py-2 text-sm font-medium text-muted hover:bg-gray-100 transition-colors"
-                      >
-                        Ver curso
-                      </a>
-                    </div>
+                    <Link
+                      href={item.slug ? `/cursos/${item.slug}/programa` : "/cursos"}
+                      className="rounded-lg bg-border px-4 py-2 text-sm font-medium text-muted hover:bg-gray-100 transition-colors"
+                    >
+                      Ver programa
+                    </Link>
                   </article>
                 ))}
               </div>
@@ -241,7 +238,7 @@ export default function Perfil() {
 
           <div className="mt-8 rounded-lg border border-border bg-gray-50 p-6">
             <h3 className="text-lg font-bold text-foreground mb-4">
-              Conectado con Discord
+              Conectado con Google
             </h3>
             <div className="flex items-center gap-3">
               <span className="w-2 h-2 rounded-full bg-green-500" />
@@ -250,11 +247,26 @@ export default function Perfil() {
               </span>
             </div>
             <p className="mt-2 text-xs text-muted">
-              Has iniciado sesión con tu cuenta de Discord.
+              Has iniciado sesión con tu cuenta de Google. Las inscripciones y
+              avisos se envían a {user.email}.
             </p>
           </div>
         </div>
       </div>
     </main>
   );
+}
+
+function formatearFecha(valor: string): string {
+  if (!valor) return "—";
+
+  const fecha = new Date(valor);
+
+  if (Number.isNaN(fecha.getTime())) return valor;
+
+  return fecha.toLocaleDateString("es-ES", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
 }

@@ -34,11 +34,34 @@ export default function Cursos() {
   const [error, setError] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedCurso, setSelectedCurso] = useState<Curso | null>(null);
-  const [formName, setFormName] = useState("");
-  const [formEmail, setFormEmail] = useState("");
-  const [formDiscord, setFormDiscord] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [modalError, setModalError] = useState<string | null>(null);
+  const [session, setSession] = useState<{
+    name: string;
+    email: string;
+  } | null>(null);
+  const [sessionLoading, setSessionLoading] = useState(true);
+
+  useEffect(() => {
+    async function cargarSesion() {
+      try {
+        const res = await fetch("/api/auth/session", { cache: "no-store" });
+        const data = await res.json();
+        setSession(
+          data.user
+            ? { name: data.user.name, email: data.user.email }
+            : null
+        );
+      } catch {
+        setSession(null);
+      } finally {
+        setSessionLoading(false);
+      }
+    }
+
+    cargarSesion();
+  }, []);
 
   useEffect(() => {
     async function cargarCursos() {
@@ -137,9 +160,7 @@ export default function Cursos() {
                       onClick={() => {
                         setSelectedCurso(curso);
                         setSubmitted(false);
-                        setFormName("");
-                        setFormEmail("");
-                        setFormDiscord("");
+                        setModalError(null);
                         setModalOpen(true);
                       }}
                       className="mt-5 w-full rounded-lg bg-brand py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-hover"
@@ -209,18 +230,84 @@ export default function Cursos() {
           <div className="w-full max-w-md rounded-xl border border-border bg-white p-6 shadow-xl">
             {submitted ? (
               <div className="text-center">
-                <p className="text-lg font-bold text-foreground">¡Inscripción enviada!</p>
-                <p className="mt-2 text-sm text-muted">
-                  Nos pondremos en contacto contigo pronto para el curso{" "}
-                  <strong>{selectedCurso.nombre}</strong>.
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-2xl text-green-600">
+                  ✓
+                </div>
+                <p className="mt-4 text-lg font-bold text-foreground">
+                  Inscripción enviada
                 </p>
-                <button
-                  type="button"
-                  onClick={() => setModalOpen(false)}
-                  className="mt-6 w-full rounded-lg bg-brand py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-hover"
+                <p className="mt-2 text-sm text-muted">
+                  Tu inscripción a <strong>{selectedCurso.nombre}</strong> quedó
+                  registrada con el estado:
+                </p>
+                <span className="mt-3 inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
+                  <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                  En espera
+                </span>
+                <p className="mt-3 text-xs leading-relaxed text-muted">
+                  Te avisaremos por correo cuando tu curso sea activado. Puedes
+                  seguir el estado en tu panel.
+                </p>
+                <div className="mt-6 flex flex-col gap-2">
+                  <Link
+                    href="/mis-cursos"
+                    className="w-full rounded-lg bg-brand py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-hover"
+                  >
+                    Ver mis cursos
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => setModalOpen(false)}
+                    className="w-full rounded-lg border border-border py-3 text-sm font-semibold text-muted transition-colors hover:bg-gray-50"
+                  >
+                    Cerrar
+                  </button>
+                </div>
+              </div>
+            ) : sessionLoading ? (
+              <div className="flex items-center justify-center gap-3 py-10 text-sm text-muted">
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-brand border-t-transparent" />
+                Comprobando tu sesión...
+              </div>
+            ) : !session ? (
+              <div className="text-center">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-left text-lg font-bold text-foreground">
+                    Inscríbete a {selectedCurso.nombre}
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => setModalOpen(false)}
+                    className="text-muted hover:text-foreground"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <div className="mx-auto mt-6 flex h-14 w-14 items-center justify-center rounded-full bg-brand/10 text-brand">
+                  <svg
+                    className="h-6 w-6"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                  </svg>
+                </div>
+                <p className="mt-4 text-sm text-muted">
+                  Para inscribirte necesitas entrar con tu cuenta de Google.
+                  Así tu curso aparece en tu panel y puedes seguir su estado.
+                </p>
+                <Link
+                  href="/login?next=/cursos"
+                  className="mt-6 block w-full rounded-lg bg-brand py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-hover"
                 >
-                  Cerrar
-                </button>
+                  Continuar con Google
+                </Link>
               </div>
             ) : (
               <>
@@ -236,68 +323,65 @@ export default function Cursos() {
                     ✕
                   </button>
                 </div>
+
+                {modalError && (
+                  <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-700">
+                    {modalError}
+                  </div>
+                )}
+
                 <form
                   onSubmit={async (e) => {
                     e.preventDefault();
                     setSubmitting(true);
+                    setModalError(null);
+
                     try {
                       const res = await fetch("/api/inscripcion", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
-                          name: formName,
-                          email: formEmail,
-                          discord: formDiscord,
                           cursoNombre: selectedCurso.nombre,
                           cursoSlug: selectedCurso.slug,
                         }),
                       });
-                      if (res.ok) {
-                        setSubmitted(true);
+
+                      const data = (await res.json().catch(() => null)) as
+                        | { error?: string }
+                        | null;
+
+                      if (!res.ok) {
+                        throw new Error(
+                          data?.error ??
+                            "No se pudo enviar la inscripción. Intenta de nuevo."
+                        );
                       }
-                    } catch {
-                      // ignore
+
+                      setSubmitted(true);
+                    } catch (err) {
+                      setModalError(
+                        err instanceof Error
+                          ? err.message
+                          : "No se pudo enviar la inscripción."
+                      );
                     } finally {
                       setSubmitting(false);
                     }
                   }}
                   className="space-y-4"
                 >
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-1">
-                      Nombre *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={formName}
-                      onChange={(e) => setFormName(e.target.value)}
-                      className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
-                    />
+                  <div className="rounded-lg border border-border bg-gray-50 p-4">
+                    <p className="text-xs text-muted">Inscripción a nombre de</p>
+                    <p className="mt-1 text-sm font-semibold">{session.name}</p>
+                    <p className="text-xs text-muted">{session.email}</p>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-1">
-                      Correo *
-                    </label>
-                    <input
-                      type="email"
-                      required
-                      value={formEmail}
-                      onChange={(e) => setFormEmail(e.target.value)}
-                      className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-1">
-                      Usuario de Discord (opcional)
-                    </label>
-                    <input
-                      type="text"
-                      value={formDiscord}
-                      onChange={(e) => setFormDiscord(e.target.value)}
-                      className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
-                    />
-                  </div>
+
+                  <p className="text-xs leading-relaxed text-muted">
+                    Al enviar, tu inscripción quedará en estado{" "}
+                    <strong className="text-foreground">En espera</strong> hasta
+                    que el equipo la active.
+                  </p>
+
                   <button
                     type="submit"
                     disabled={submitting}

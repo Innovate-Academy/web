@@ -21,7 +21,7 @@ const FAQS = [
   {
     pregunta: "¿Cómo se comunican el profesor y los alumnos?",
     respuesta:
-      "Tenemos un servidor de Discord con canales por curso, además de las sesiones en vivo y el correo de Soporte.",
+      "Tenemos grupos de WhatsApp por curso, además de las sesiones en vivo por Google Meet y el correo de Soporte.",
   },
   {
     pregunta: "¿Puede trabajar o enseñar en la academia?",

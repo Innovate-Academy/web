@@ -43,7 +43,6 @@ const CARD_HOVER =
 const INPUT_CLASS =
   "w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition-all focus:border-brand focus:ring-2 focus:ring-brand";
 
-const POSTULACIONES_TO = "alec.alvarez.lobato@gmail.com";
 
 export default function Postula() {
   const [area, setArea] = useState<Area | null>(null);
@@ -101,46 +100,23 @@ export default function Postula() {
     setLoading(true);
 
     try {
-      const fecha = new Date().toLocaleString("es-ES", {
-        dateStyle: "long",
-        timeStyle: "short",
+      const response = await fetch("/api/postulaciones", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nombre,
+          email,
+          puesto: area.nombre,
+        }),
       });
 
-      const payload = new URLSearchParams({
-        _subject: `Nueva postulación: ${area.nombre} — ${nombre}`,
-        _template: "table",
-        _replyto: email,
-        _url: "https://innovateweb.vercel.app/postula",
-        Nombre: nombre,
-        Puesto: area.nombre,
-        Correo: email,
-        Mensaje: `${nombre} se postuló a ${area.nombre}. Correo electrónico: ${email}`,
-        Fecha: fecha,
-      });
+      const data = (await response.json().catch(() => null)) as
+        | { error?: string }
+        | null;
 
-      const response = await fetch(
-        `https://formsubmit.co/ajax/${encodeURIComponent(POSTULACIONES_TO)}`,
-        {
-          method: "POST",
-          headers: { Accept: "application/json" },
-          body: payload,
-        }
-      );
-
-      const texto = await response.text();
-      let data: { success?: boolean | string; message?: string } | null = null;
-
-      try {
-        data = JSON.parse(texto);
-      } catch {
-        // Respuesta no JSON.
-      }
-
-      const exito = data?.success === true || data?.success === "true";
-
-      if (!response.ok || !exito) {
+      if (!response.ok) {
         throw new Error(
-          data?.message ?? "No se pudo enviar la postulación. Intenta de nuevo."
+          data?.error ?? "No se pudo enviar la postulación. Intenta de nuevo."
         );
       }
 

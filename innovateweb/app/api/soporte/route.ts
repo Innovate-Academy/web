@@ -1,51 +1,61 @@
-export async function POST(req: Request) {
+import { GoogleError, googleRequest } from "@/app/lib/google-backend";
+
+export async function POST(request: Request) {
+  let name = "";
+  let email = "";
+  let message = "";
+
   try {
-    const body = await req.json();
-    const { name, email, message } = body;
-
-    if (!name || !email || !message) {
-      return Response.json(
-        { error: "Faltan campos requeridos" },
-        { status: 400 }
-      );
-    }
-
-    const discordPayload = {
-      embeds: [
-        {
-          title: "📩 Nuevo mensaje de soporte",
-          color: 0x3b82f6,
-          fields: [
-            { name: "Nombre", value: name, inline: true },
-            { name: "Correo", value: email, inline: true },
-            { name: "Mensaje", value: message },
-          ],
-          footer: { text: "Innovate Academy - Centro de Soporte" },
-          timestamp: new Date().toISOString(),
-        },
-      ],
+    const body = (await request.json()) as {
+      name?: string;
+      email?: string;
+      message?: string;
     };
+    name = String(body.name ?? "").trim();
+    email = String(body.email ?? "").trim();
+    message = String(body.message ?? "").trim();
+  } catch {
+    return Response.json({ error: "Solicitud inválida." }, { status: 400 });
+  }
 
-    const response = await fetch(process.env.DISCORD_WEBHOOK_URL!, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(discordPayload),
-    });
+  if (!name || !email || !message) {
+    return Response.json(
+      { error: "Faltan campos requeridos." },
+      { status: 400 }
+    );
+  }
 
-    if (!response.ok) {
-      console.error("Discord webhook error:", response.status);
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return Response.json(
+      { error: "El correo no es válido." },
+      { status: 400 }
+    );
+  }
+
+  try {
+    await googleRequest("support", { nombre: name, email, mensaje: message });
+    return Response.json({ success: true });
+  } catch (err) {
+    if (err instanceof GoogleError && err.code === "NO_CONFIGURADO") {
       return Response.json(
-        { error: "Error al enviar a Discord" },
-        { status: 500 }
+        {
+          error:
+            "El soporte todavía no está conectado a Gmail. Avisa al equipo.",
+        },
+        { status: 503 }
       );
     }
 
-    return Response.json({ success: true });
-  } catch (error) {
-    console.error("Error al enviar soporte:", error);
+    console.error("Error al enviar soporte por Gmail:", err);
+
     return Response.json(
-      { error: "Error al enviar el mensaje" },
-      { status: 500 }
+      {
+        error:
+          err instanceof Error
+            ? err.message
+            : "No se pudo enviar el mensaje. Intenta de nuevo.",
+      },
+      { status: 502 }
     );
   }
 }

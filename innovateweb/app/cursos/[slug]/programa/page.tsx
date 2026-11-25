@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { getSession } from "@/app/lib/session";
 
 interface Curso {
   id: number;
@@ -100,47 +101,9 @@ async function getPrograma(cursoId: number): Promise<Modulo[]> {
   return (data ?? []) as Modulo[];
 }
 
-async function getSession(): Promise<{ user_id: string | null; isProfesor: boolean }> {
-  const cookieStore = await cookies();
-  const session = cookieStore.get("session");
-
-  if (!session) return { user_id: null, isProfesor: false };
-
-  try {
-    const user = JSON.parse(session.value);
-    const userId = user.id;
-
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return cookieStore.getAll();
-          },
-          setAll(cookiesToSet) {
-            try {
-              cookiesToSet.forEach(({ name, value, options }) => {
-                cookieStore.set(name, value, options);
-              });
-            } catch {
-              // Server Components can't modify cookies
-            }
-          },
-        },
-      }
-    );
-
-    const { data: profesor } = await supabase
-      .from("profesores")
-      .select("id")
-      .eq("user_id", userId)
-      .single();
-
-    return { user_id: userId, isProfesor: !!profesor };
-  } catch {
-    return { user_id: null, isProfesor: false };
-  }
+async function getSessionInfo(): Promise<{ user_id: string | null; isProfesor: boolean }> {
+  const user = await getSession();
+  return { user_id: user?.id ?? null, isProfesor: false };
 }
 
 interface PageProps {
@@ -157,7 +120,7 @@ export default async function CursoProgramaPage({ params }: PageProps) {
 
   const [programa, session] = await Promise.all([
     getPrograma(curso.id),
-    getSession(),
+    getSessionInfo(),
   ]);
 
   const isOwner = session.isProfesor && curso.profe_id === session.user_id;

@@ -1,8 +1,8 @@
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { SESSION_COOKIE } from "@/app/lib/session";
 
 export async function POST() {
   const cookieStore = await cookies();
-  cookieStore.delete("session");
-  redirect("/");
+  cookieStore.delete(SESSION_COOKIE);
+  return Response.json({ success: true });
 }

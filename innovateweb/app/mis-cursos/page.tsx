@@ -1,172 +1,59 @@
-import { cookies } from "next/headers";
-import { createServerClient } from "@supabase/ssr";
 import Link from "next/link";
+import { getSession } from "@/app/lib/session";
+import {
+  GoogleError,
+  googleRequest,
+  isGoogleConfigured,
+} from "@/app/lib/google-backend";
+import type { GoogleEnrollment } from "@/app/lib/google-backend";
+import RefreshButton from "../components/RefreshButton";
 
-interface DiscordUser {
-  id: string;
-  username: string;
-  global_name: string | null;
-  avatar: string | null;
-  email: string | null;
-  discriminator: string;
-  avatar_url: string | null;
-}
+export const dynamic = "force-dynamic";
 
-interface Curso {
-  id: number | string;
-  slug: string;
-  nombre: string;
-  descripcion: string;
-  icono: string;
-  estado: string;
-  duracion_meses: number;
-  precio: string;
-  resultado: string;
-  programas: string[];
-  orden: number;
-  dispo: boolean;
-}
+const ESTADOS: Record<
+  string,
+  { etiqueta: string; clase: string; punto: string; descripcion: string }
+> = {
+  "En espera": {
+    etiqueta: "En espera",
+    clase: "bg-amber-100 text-amber-800",
+    punto: "bg-amber-500",
+    descripcion:
+      "Recibimos tu inscripción. El equipo la revisará y la activará pronto.",
+  },
+  Cursando: {
+    etiqueta: "Cursando",
+    clase: "bg-emerald-100 text-emerald-700",
+    punto: "bg-emerald-500",
+    descripcion: "Tu curso está activo. ¡A seguir aprendiendo!",
+  },
+  Completado: {
+    etiqueta: "Completado",
+    clase: "bg-brand/10 text-brand",
+    punto: "bg-brand",
+    descripcion: "Terminaste este curso. ¡Felicidades!",
+  },
+};
 
-async function getSession(): Promise<DiscordUser | null> {
-  const cookieStore = await cookies();
-  const session = cookieStore.get("session");
-
-  if (!session) return null;
+async function getEnrollments(email: string): Promise<GoogleEnrollment[]> {
+  if (!isGoogleConfigured()) return [];
 
   try {
-    return JSON.parse(session.value);
-  } catch {
-    return null;
-  }
-}
+    const result = await googleRequest<{ enrollments: GoogleEnrollment[] }>(
+      "status",
+      { email }
+    );
 
-async function getProfesorId(userId: string): Promise<string | null> {
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              cookieStore.set(name, value, options);
-            });
-          } catch {
-            // Server Components can't modify cookies
-          }
-        },
-      },
+    return result.enrollments ?? [];
+  } catch (err) {
+    if (!(err instanceof GoogleError)) {
+      console.error("Error al cargar inscripciones:", err);
     }
-  );
-
-  const { data } = await supabase
-    .from("profesores")
-    .select("id")
-    .eq("user_id", userId)
-    .single();
-
-  return data?.id ?? null;
-}
-
-async function getEnrolledCourses(userId: string): Promise<Curso[]> {
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              cookieStore.set(name, value, options);
-            });
-          } catch {
-            // Server Components can't modify cookies
-          }
-        },
-      },
-    }
-  );
-
-  const { data: enrollments, error } = await supabase
-    .from("inscripciones")
-    .select(`
-      curso_id,
-      creado_en,
-      cursos (
-        id,
-        slug,
-        nombre,
-        descripcion,
-        icono,
-        estado,
-        duracion_meses,
-        precio,
-        resultado,
-        programas,
-        orden,
-        dispo
-      )
-    `)
-    .eq("user_id", userId)
-    .order("creado_en", { ascending: false });
-
-  if (error) {
-    console.error("Error fetching enrolled courses:", error);
     return [];
   }
-
-  return (enrollments ?? []).flatMap((enrollment) => {
-    const curso = enrollment.cursos;
-    return (Array.isArray(curso) ? curso : curso ? [curso] : []) as unknown as Curso[];
-  });
 }
 
-async function getTeachingCourses(profesorId: string): Promise<Curso[]> {
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              cookieStore.set(name, value, options);
-            });
-          } catch {
-            // Server Components can't modify cookies
-          }
-        },
-      },
-    }
-  );
-
-  const { data: cursos, error } = await supabase
-    .from("cursos")
-    .select("id, slug, nombre, descripcion, icono, estado, duracion_meses, precio, resultado, programas, orden, dispo")
-    .eq("profe_id", profesorId)
-    .order("orden", { ascending: true });
-
-  if (error) {
-    console.error("Error fetching teaching courses:", error);
-    return [];
-  }
-
-  return (cursos ?? []) as Curso[];
-}
-
-async function MisCursosContent() {
+export default async function MisCursosPage() {
   const user = await getSession();
 
   if (!user) {
@@ -180,61 +67,57 @@ async function MisCursosContent() {
             Inicia sesión para ver tus cursos
           </h1>
           <p className="text-muted mb-6">
-            Necesitas estar autenticado con Discord para acceder a tus cursos inscritos.
+            Entra con tu cuenta de Google para consultar el estado de tus
+            inscripciones.
           </p>
           <Link
-            href="/login"
+            href="/login?next=/mis-cursos"
             className="inline-flex items-center justify-center gap-2 w-full rounded-lg bg-brand px-4 py-3 text-sm font-semibold text-white hover:bg-brand-hover transition-colors"
           >
-            Iniciar sesión con Discord
+            Continuar con Google
           </Link>
         </div>
       </main>
     );
   }
 
-  const profesorId = await getProfesorId(user.id);
-  const isProfesor = !!profesorId;
+  const enrollments = await getEnrollments(user.email);
+  const configurado = isGoogleConfigured();
 
-  const [enrolledCourses, teachingCourses] = await Promise.all([
-    getEnrolledCourses(user.id),
-    isProfesor ? getTeachingCourses(profesorId!) : Promise.resolve([]),
-  ]);
-
-  // Combine unique courses (by id)
-  const allCoursesMap = new Map<string, Curso>();
-  enrolledCourses.forEach((c) => allCoursesMap.set(String(c.id), c));
-  teachingCourses.forEach((c) => allCoursesMap.set(String(c.id), c));
-  const allCourses = Array.from(allCoursesMap.values());
+  const activos = enrollments.filter(
+    (item) => item.estado === "Cursando" || item.estado === "Completado"
+  ).length;
 
   return (
     <main className="min-h-screen bg-background py-8">
       <div className="max-w-4xl mx-auto px-6">
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">
+            <p className="text-xs font-semibold uppercase tracking-widest text-brand">
+              Mi panel
+            </p>
+            <h1 className="mt-2 text-3xl font-bold tracking-tight text-foreground">
               Mis cursos
             </h1>
-            <p className="mt-2 text-muted">
-              {allCourses.length} curso{allCourses.length !== 1 ? "s" : ""} total
-              {isProfesor && (
-                <span className="ml-2">
-                  ({enrolledCourses.length} inscritos, {teachingCourses.length} impartiendo)
-                </span>
-              )}
+            <p className="mt-2 text-sm text-muted">
+              {enrollments.length === 0
+                ? "Todavía no tienes inscripciones."
+                : `${enrollments.length} inscripción${
+                    enrollments.length !== 1 ? "es" : ""
+                  } · ${activos} activa${activos !== 1 ? "s" : ""}`}
             </p>
           </div>
-          {isProfesor && (
-            <Link
-              href="/dashboard/profesor"
-              className="rounded-lg bg-brand px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-hover transition-colors"
-            >
-              Panel de profesor
-            </Link>
-          )}
+          <RefreshButton />
         </div>
 
-        {allCourses.length === 0 ? (
+        {!configurado && (
+          <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-4 text-xs leading-relaxed text-amber-800">
+            El sistema de cursos con Google todavía no está conectado. Cuando el
+            equipo termine la configuración, tus inscripciones aparecerán aquí.
+          </div>
+        )}
+
+        {enrollments.length === 0 ? (
           <div className="rounded-xl border border-border bg-white p-12 text-center">
             <div className="w-20 h-20 rounded-full bg-brand/10 flex items-center justify-center mx-auto mb-6 text-4xl">
               📚
@@ -243,9 +126,8 @@ async function MisCursosContent() {
               No tienes cursos aún
             </h2>
             <p className="text-muted mb-8 max-w-md mx-auto">
-              {isProfesor
-                ? "No tienes cursos asignados como profesor ni inscripciones como alumno."
-                : "Explora nuestro catálogo y encuentra el curso perfecto para ti."}
+              Explora nuestro catálogo, inscríbete con tu cuenta de Google y
+              sigue el estado de tu curso desde aquí.
             </p>
             <Link
               href="/cursos"
@@ -255,140 +137,93 @@ async function MisCursosContent() {
             </Link>
           </div>
         ) : (
-          <>
-            {enrolledCourses.length > 0 && (
-              <div className="mb-8">
-                <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-green-500" />
-                  Inscritos como alumno ({enrolledCourses.length})
-                </h2>
-                <div className="space-y-4">
-                  {enrolledCourses.map((curso) => (
-                    <article
-                      key={`enrolled-${curso.id}`}
-                      className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-xl border border-border bg-white p-6 transition-colors hover:border-brand/30 hover:shadow-lg ${
-                        !curso.dispo ? "opacity-70" : ""
-                      }`}
-                    >
-                      <div className="flex items-center gap-4 min-w-0">
-                        <div className="w-16 h-16 rounded-xl bg-green-100 flex items-center justify-center shrink-0">
-                          <span className="text-3xl">{curso.icono || "📚"}</span>
-                        </div>
-                        <div className="min-w-0">
-                          <h3 className="font-bold text-foreground truncate">
-                            {curso.nombre}
-                          </h3>
-                          <p className="mt-1 text-sm text-muted truncate">
-                            {curso.descripcion}
-                          </p>
-                          <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-muted">
-                            <span className="flex items-center gap-1">
-                              <span className="w-1.5 h-1.5 rounded-full bg-brand" />
-                              {curso.duracion_meses} meses
-                            </span>
-                            <span className="font-semibold text-foreground">
-                              ${curso.precio}
-                            </span>
-                            <span
-                              className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                                curso.dispo
-                                  ? "bg-green-100 text-green-700"
-                                  : "bg-red-100 text-red-700"
-                              }`}
-                            >
-                              {curso.dispo ? "Disponible" : "No disponible"}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <Link
-                          href={`/cursos/${curso.slug}`}
-                          className="rounded-lg bg-brand px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-hover transition-colors"
-                        >
-                          Continuar aprendiendo
-                        </Link>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              </div>
-            )}
+          <div className="space-y-4">
+            {enrollments.map((item) => {
+              const estado = ESTADOS[item.estado] ?? {
+                etiqueta: item.estado,
+                clase: "bg-gray-100 text-gray-700",
+                punto: "bg-gray-400",
+                descripcion: "",
+              };
 
-            {teachingCourses.length > 0 && (
-              <div>
-                <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-brand" />
-                  Impartiendo como profesor ({teachingCourses.length})
-                </h2>
-                <div className="space-y-4">
-                  {teachingCourses.map((curso) => (
-                    <article
-                      key={`teaching-${curso.id}`}
-                      className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-xl border border-brand/30 bg-brand/5 p-6 transition-colors hover:border-brand/50 hover:shadow-lg ${
-                        !curso.dispo ? "opacity-70" : ""
-                      }`}
-                    >
-                      <div className="flex items-center gap-4 min-w-0">
-                        <div className="w-16 h-16 rounded-xl bg-brand/20 flex items-center justify-center shrink-0">
-                          <span className="text-3xl">{curso.icono || "📚"}</span>
-                        </div>
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-bold text-foreground truncate">
-                              {curso.nombre}
-                            </h3>
-                            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-brand/20 text-brand">
-                              Profesor
-                            </span>
-                          </div>
-                          <p className="mt-1 text-sm text-muted truncate">
-                            {curso.descripcion}
-                          </p>
-                          <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-muted">
-                            <span className="flex items-center gap-1">
-                              <span className="w-1.5 h-1.5 rounded-full bg-brand" />
-                              {curso.duracion_meses} meses
-                            </span>
-                            <span className="font-semibold text-foreground">
-                              ${curso.precio}
-                            </span>
-                            <span
-                              className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                                curso.dispo
-                                  ? "bg-green-100 text-green-700"
-                                  : "bg-red-100 text-red-700"
-                              }`}
-                            >
-                              {curso.dispo ? "Disponible" : "No disponible"}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <Link
-                          href={`/dashboard/profesor`}
-                          className="rounded-lg bg-brand px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-hover transition-colors"
+              return (
+                <article
+                  key={item.id}
+                  className="rounded-xl border border-border bg-white p-6 transition-colors hover:border-brand/30 hover:shadow-[0_20px_45px_-20px_rgba(15,23,42,0.25)]"
+                >
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-3">
+                        <h2 className="text-lg font-bold text-foreground">
+                          {item.curso}
+                        </h2>
+                        <span
+                          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${estado.clase}`}
                         >
-                          Gestionar curso
-                        </Link>
-                        <Link
-                          href={`/cursos/${curso.slug}`}
-                          className="rounded-lg border border-border bg-white px-5 py-2.5 text-sm font-semibold text-muted hover:bg-gray-50 transition-colors"
-                        >
-                          Ver como alumno
-                        </Link>
+                          <span
+                            className={`h-1.5 w-1.5 rounded-full ${estado.punto}`}
+                          />
+                          {estado.etiqueta}
+                        </span>
                       </div>
-                    </article>
-                  ))}
-                </div>
-              </div>
-            )}
-          </>
+                      <p className="mt-2 text-sm text-muted">
+                        {estado.descripcion}
+                      </p>
+                      <p className="mt-3 text-[11px] text-muted">
+                        Inscrito el {formatearFecha(item.fecha)}
+                        {item.actualizado && item.actualizado !== item.fecha
+                          ? ` · Actualizado el ${formatearFecha(item.actualizado)}`
+                          : ""}
+                      </p>
+                    </div>
+
+                    <div className="flex shrink-0 flex-wrap items-center gap-2">
+                      {item.estado === "Cursando" && item.slug && (
+                        <Link
+                          href={`/cursos/${item.slug}/programa`}
+                          className="rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-hover"
+                        >
+                          Ir al curso
+                        </Link>
+                      )}
+                      {item.estado === "Completado" && item.slug && (
+                        <Link
+                          href={`/cursos/${item.slug}/programa`}
+                          className="rounded-lg border border-border bg-white px-4 py-2.5 text-sm font-semibold text-muted transition-colors hover:bg-gray-50"
+                        >
+                          Ver programa
+                        </Link>
+                      )}
+                      {item.estado === "En espera" && item.slug && (
+                        <Link
+                          href={`/cursos/${item.slug}/programa`}
+                          className="rounded-lg border border-border bg-white px-4 py-2.5 text-sm font-semibold text-muted transition-colors hover:bg-gray-50"
+                        >
+                          Ver programa
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
         )}
       </div>
     </main>
   );
 }
 
-export default MisCursosContent;
+function formatearFecha(valor: string): string {
+  if (!valor) return "—";
+
+  const fecha = new Date(valor);
+
+  if (Number.isNaN(fecha.getTime())) return valor;
+
+  return fecha.toLocaleDateString("es-ES", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+}
