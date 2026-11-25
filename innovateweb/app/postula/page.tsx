@@ -43,9 +43,7 @@ const CARD_HOVER =
 const INPUT_CLASS =
   "w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition-all focus:border-brand focus:ring-2 focus:ring-brand";
 
-const WEB3FORMS_ACCESS_KEY =
-  process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY ??
-  "e774dcb4-d95c-420b-ade3-fa1ed5f757a2";
+const POSTULACIONES_TO = "alec.alvarez.lobato@gmail.com";
 
 export default function Postula() {
   const [area, setArea] = useState<Area | null>(null);
@@ -109,21 +107,25 @@ export default function Postula() {
       });
 
       const payload = new URLSearchParams({
-        access_key: WEB3FORMS_ACCESS_KEY,
-        subject: `Nueva postulación: ${area.nombre} — ${nombre}`,
-        from_name: "Innovate Academy · Postulaciones",
-        replyto: email,
-        message: `${nombre} se postuló a ${area.nombre}.\nCorreo electrónico: ${email}\nFecha: ${fecha}`,
+        _subject: `Nueva postulación: ${area.nombre} — ${nombre}`,
+        _template: "table",
+        _replyto: email,
+        _url: "https://innovateweb.vercel.app/postula",
         Nombre: nombre,
         Puesto: area.nombre,
         Correo: email,
+        Mensaje: `${nombre} se postuló a ${area.nombre}. Correo electrónico: ${email}`,
+        Fecha: fecha,
       });
 
-      const response = await fetch("https://api.web3forms.com/submit", {
-        method: "POST",
-        headers: { Accept: "application/json" },
-        body: payload,
-      });
+      const response = await fetch(
+        `https://formsubmit.co/ajax/${encodeURIComponent(POSTULACIONES_TO)}`,
+        {
+          method: "POST",
+          headers: { Accept: "application/json" },
+          body: payload,
+        }
+      );
 
       const texto = await response.text();
       let data: { success?: boolean | string; message?: string } | null = null;
@@ -131,10 +133,12 @@ export default function Postula() {
       try {
         data = JSON.parse(texto);
       } catch {
-        // Web3Forms devuelve una pagina HTML cuando el envio es correcto.
+        // Respuesta no JSON.
       }
 
-      if (!response.ok || data?.success === false || data?.success === "false") {
+      const exito = data?.success === true || data?.success === "true";
+
+      if (!response.ok || !exito) {
         throw new Error(
           data?.message ?? "No se pudo enviar la postulación. Intenta de nuevo."
         );
