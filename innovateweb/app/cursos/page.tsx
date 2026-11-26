@@ -399,6 +399,7 @@ export default function Cursos() {
                       <Link
                         href="/terminos-servicios"
                         target="_blank"
+                        rel="noopener noreferrer"
                         className="font-semibold text-brand hover:text-brand-hover"
                       >
                         Condiciones de contratación
@@ -407,6 +408,7 @@ export default function Cursos() {
                       <Link
                         href="/privacidad"
                         target="_blank"
+                        rel="noopener noreferrer"
                         className="font-semibold text-brand hover:text-brand-hover"
                       >
                         Política de privacidad
