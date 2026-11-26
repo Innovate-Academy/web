@@ -5,10 +5,27 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
+const LockIcon = () => (
+  <svg
+    className="w-4 h-4 ml-1 text-muted"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+    />
+  </svg>
+);
+
 const LINKS = [
   { href: "/", label: "Inicio" },
   { href: "/cursos", label: "Cursos" },
-  { href: "/dashboard", label: "Mi panel" },
+  { href: "/dashboard", label: "Mi panel", requiresAuth: true },
   { href: "/sobre-nosotros", label: "Sobre nosotros" },
   { href: "/soporte", label: "Soporte" },
   { href: "/postula", label: "Postulaciones" },
@@ -73,16 +90,28 @@ export default function Navbar() {
         <ul className="hidden items-center gap-6 text-sm md:flex">
           {LINKS.map((link) => (
             <li key={link.href}>
-              <Link
-                href={link.href}
-                className={
-                  pathname === link.href
-                    ? "font-semibold text-brand"
-                    : "text-muted hover:text-foreground"
-                }
-              >
-                {link.label}
-              </Link>
+              {link.requiresAuth && !user && !loading ? (
+                <span className="flex items-center gap-1 text-muted hover:text-foreground cursor-not-allowed">
+                  <Link
+                    href="/login"
+                    className="text-muted hover:text-foreground"
+                  >
+                    {link.label}
+                  </Link>
+                  <LockIcon />
+                </span>
+              ) : (
+                <Link
+                  href={link.href}
+                  className={
+                    pathname === link.href
+                      ? "font-semibold text-brand"
+                      : "text-muted hover:text-foreground"
+                  }
+                >
+                  {link.label}
+                </Link>
+              )}
             </li>
           ))}
         </ul>
@@ -169,13 +198,26 @@ export default function Navbar() {
         <ul className="flex flex-col gap-3 border-t border-border px-6 py-4 text-sm md:hidden">
           {LINKS.map((link) => (
             <li key={link.href}>
-              <Link
-                href={link.href}
-                onClick={() => setMenuOpen(false)}
-                className={pathname === link.href ? "font-semibold text-brand" : "text-muted"}
-              >
-                {link.label}
-              </Link>
+              {link.requiresAuth && !user && !loading ? (
+                <span className="flex items-center gap-1 text-muted cursor-not-allowed">
+                  <a
+                    href="/login"
+                    onClick={() => setMenuOpen(false)}
+                    className="text-muted"
+                  >
+                    {link.label}
+                  </a>
+                  <LockIcon />
+                </span>
+              ) : (
+                <Link
+                  href={link.href}
+                  onClick={() => setMenuOpen(false)}
+                  className={pathname === link.href ? "font-semibold text-brand" : "text-muted"}
+                >
+                  {link.label}
+                </Link>
+              )}
             </li>
           ))}
           <li>
