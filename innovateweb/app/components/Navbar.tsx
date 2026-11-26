@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const LINKS = [
@@ -14,22 +14,18 @@ const LINKS = [
   { href: "/postula", label: "Postulaciones" },
 ];
 
-interface DiscordUser {
+interface GoogleUser {
   id: string;
-  username: string;
-  global_name: string | null;
-  avatar: string | null;
-  email: string | null;
-  discriminator: string;
-  avatar_url: string | null;
+  email: string;
+  name: string;
+  picture: string | null;
 }
 
 export default function Navbar() {
   const pathname = usePathname();
-  const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [user, setUser] = useState<DiscordUser | null>(null);
+  const [user, setUser] = useState<GoogleUser | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -37,6 +33,7 @@ export default function Navbar() {
       try {
         const res = await fetch("/api/auth/session", {
           headers: { "Content-Type": "application/json" },
+          cache: "no-store",
         });
         const data = await res.json();
         setUser(data.user ?? null);
@@ -53,7 +50,7 @@ export default function Navbar() {
   const handleLogout = async () => {
     setUserMenuOpen(false);
     await fetch("/api/auth/logout", { method: "POST" });
-    router.refresh();
+    window.location.href = "/";
   };
 
   return (
@@ -101,24 +98,25 @@ export default function Navbar() {
           {loading ? (
             <div className="w-2 h-2 rounded-full bg-brand animate-pulse" />
           ) : user ? (
-            <div className="relative group">
+            <div className="relative">
               <button
                 onClick={() => setUserMenuOpen((v) => !v)}
                 className="flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
               >
-                {user.avatar_url ? (
+                {user.picture ? (
+                  // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={user.avatar_url}
-                    alt={user.username}
+                    src={user.picture}
+                    alt={user.name}
                     className="w-6 h-6 rounded-full object-cover"
                   />
                 ) : (
                   <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-xs font-bold">
-                    {user.username.charAt(0).toUpperCase()}
+                    {user.name.charAt(0).toUpperCase()}
                   </div>
                 )}
                 <span className="ml-2 truncate max-w-[120px]">
-                  {user.global_name ?? user.username}
+                  {user.name}
                 </span>
               </button>
 

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 const FAQS = [
@@ -9,19 +10,23 @@ const FAQS = [
       "Las clases son en vivo con el profesor. Además, cada sesión queda grabada para que puedas repasarla cuando quieras.",
   },
   {
-    pregunta: "¿Hay reembolsos o puedo cancelar mi suscripción?",
+    pregunta: "¿Puedo cancelar o pedir un reembolso?",
     respuesta:
-      "Sí. Puedes cancelar cuando quieras y solicitar el reembolso dentro de los primeros 7 días escribiendo a Soporte.",
+      "Sí. Tienes 14 días naturales desde la contratación para desistir sin indicar el motivo. Escríbenos a Soporte y te explicamos cómo hacerlo y cómo se calcula la devolución.",
+    enlace: {
+      href: "/desistimiento",
+      label: "Ver la política de desistimiento y reembolso",
+    },
   },
   {
     pregunta: "¿Dónde son las clases?",
     respuesta:
-      "Las clases se imparten online por videollamada. Solo necesitas un ordenador y conexión a internet.",
+      "Las clases se imparten online por videollamada con Google Meet. Solo necesitas un ordenador y conexión a internet.",
   },
   {
     pregunta: "¿Cómo se comunican el profesor y los alumnos?",
     respuesta:
-      "Tenemos un servidor de Discord con canales por curso, además de las sesiones en vivo y el correo de Soporte.",
+      "Las sesiones son en vivo por Google Meet y las dudas se atienden por el correo de Soporte y desde tu panel de cursos.",
   },
   {
     pregunta: "¿Puede trabajar o enseñar en la academia?",
@@ -67,6 +72,18 @@ export default function Faq() {
               <div className="overflow-hidden">
                 <p className="px-5 pb-5 text-sm leading-relaxed text-muted">
                   {item.respuesta}
+                  {"enlace" in item && item.enlace ? (
+                    <>
+                      {" "}
+                      <Link
+                        href={item.enlace.href}
+                        className="font-semibold text-brand hover:text-brand-hover"
+                      >
+                        {item.enlace.label}
+                      </Link>
+                      .
+                    </>
+                  ) : null}
                 </p>
               </div>
             </div>

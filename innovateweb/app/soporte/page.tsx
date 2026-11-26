@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { LEGAL_INFO } from "../lib/legal";
 
 export default function Soporte() {
   const [loading, setLoading] = useState(false);
@@ -135,6 +136,17 @@ export default function Soporte() {
             className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-all"
           />
         </div>
+        <p className="mb-6 text-[11px] leading-relaxed text-muted">
+          Usaremos tu nombre, correo y mensaje para atender tu consulta. Más
+          información en la{" "}
+          <Link
+            href="/privacidad"
+            className="font-semibold text-brand hover:text-brand-hover"
+          >
+            Política de privacidad
+          </Link>
+          .
+        </p>
         <button
           type="submit"
           disabled={loading}
@@ -152,8 +164,9 @@ export default function Soporte() {
               ¿Cómo me inscribo a un curso?
             </dt>
             <dd className="mt-1 text-sm text-muted">
-              Elige el curso que te interesa, haz clic en &quot;Inscribirse&quot; y
-              completa el proceso de pago.
+              Elige el curso que te interesa, entra con tu cuenta de Google y
+              envía la solicitud. El equipo te confirmará por correo la
+              disponibilidad de plaza y el medio de pago.
             </dd>
           </div>
           <div>
@@ -161,8 +174,9 @@ export default function Soporte() {
               ¿Puedo cambiar de curso?
             </dt>
             <dd className="mt-1 text-sm text-muted">
-              Sí, contáctanos dentro de los primeros 7 días y gestionamos el
-              cambio sin costo adicional.
+              Escríbenos dentro de los primeros 14 días y valoramos el cambio
+              según la disponibilidad de la cohorte. El cambio no genera un
+              derecho automático a reembolso.
             </dd>
           </div>
           <div>
@@ -171,7 +185,7 @@ export default function Soporte() {
             </dt>
             <dd className="mt-1 text-sm text-muted">
               Sí, al completar el curso recibirás un certificado digital
-              descargable.
+              descargable de Innovate Academy. No es un título oficial.
             </dd>
           </div>
           <div>
@@ -179,11 +193,44 @@ export default function Soporte() {
               ¿Qué métodos de pago aceptan?
             </dt>
             <dd className="mt-1 text-sm text-muted">
-              Aceptamos tarjetas de crédito/débito, transferencia bancaria y
-              billeteras digitales según tu país.
+              El medio de pago se indica en la ficha del curso y en el correo de
+              confirmación. No almacenamos datos de tarjeta; cuando se habilite
+              una pasarela de pago, será un proveedor de pagos quien los procese.
             </dd>
           </div>
         </dl>
+      </section>
+
+      <section className="mt-16 max-w-3xl rounded-xl border border-border bg-white p-8">
+        <h2 className="text-xl font-bold">Reclamaciones y quejas</h2>
+        <p className="mt-4 text-sm leading-relaxed text-muted">
+          Si no estás conforme con el servicio, escríbenos desde este formulario
+          o a{" "}
+          <a
+            href="mailto:innovatesoporte2026@gmail.com"
+            className="font-semibold text-brand hover:text-brand-hover"
+          >
+            innovatesoporte2026@gmail.com
+          </a>{" "}
+          indicando en el asunto «Reembolso o cancelación» u «Otro tema».
+          Responderemos en un plazo máximo de 10 días hábiles.
+        </p>
+        <p className="mt-3 text-sm leading-relaxed text-muted">
+          Puedes solicitar la hoja de reclamaciones correspondiente conforme a la
+          normativa de{" "}
+          {LEGAL_INFO.comunidad
+            ? `la comunidad autónoma de ${LEGAL_INFO.comunidad}`
+            : "la comunidad autónoma donde radica el titular"}
+          . También puedes acudir a la oficina de consumo de tu localidad o
+          comunidad autónoma y consultar la{" "}
+          <Link
+            href="/desistimiento"
+            className="font-semibold text-brand hover:text-brand-hover"
+          >
+            política de desistimiento y reembolso
+          </Link>
+          .
+        </p>
       </section>
     </main>
   );

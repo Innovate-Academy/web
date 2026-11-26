@@ -11,7 +11,7 @@ const PILARES = [
     icono: "calendario",
   },
   {
-    titulo: "WhatsApp + Discord",
+    titulo: "WhatsApp + Google Meet",
     detalle: "Seguimiento diario y anuncios.",
     icono: "comunidad",
   },
@@ -135,7 +135,7 @@ export default function SobreNosotros() {
                 {[
                   "Formación en programación, videojuegos y diseño digital.",
                   "Clases en vivo dos veces por semana.",
-                  "Grupos de WhatsApp, Discord, Google Meet y proyectos finales.",
+                  "Grupos de WhatsApp, Google Meet y proyectos finales.",
                 ].map((texto) => (
                   <div key={texto} className="flex gap-3">
                     <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand/10 text-brand">
@@ -184,7 +184,7 @@ export default function SobreNosotros() {
             <p>
               Nuestro diferenciador es la cercanía y la organización: clases en
               vivo dos veces por semana, grupos de WhatsApp, proyectos finales,
-              Google Meet y Discord para mantener conectados a alumnos,
+              Google Meet y WhatsApp para mantener conectados a alumnos,
               profesores y supervisores.
             </p>
           </div>

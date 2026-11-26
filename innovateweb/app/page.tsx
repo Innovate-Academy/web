@@ -61,10 +61,10 @@ export default function Home() {
                 Ver cursos
               </Link>
               <Link
-                href="/comunidad"
+                href="/login"
                 className="rounded-lg border border-border bg-white px-5 py-3 text-sm font-semibold text-foreground transition-colors hover:border-brand/30 hover:bg-panel"
               >
-                Únete a Discord
+                Iniciar sesión con Google
               </Link>
               <Link
                 href="/postula"

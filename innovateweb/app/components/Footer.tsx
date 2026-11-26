@@ -1,24 +1,28 @@
 import Image from "next/image";
 import Link from "next/link";
+import SocialLinks from "./SocialLinks";
 
 const ACADEMIA = [
   { href: "/cursos", label: "Cursos" },
   { href: "/mi-curso", label: "Mi Curso" },
   { href: "/soporte", label: "Soporte" },
   { href: "/postula", label: "Postulaciones" },
+  { href: "/familias", label: "Familias" },
 ];
 
 const LEGAL = [
+  { href: "/aviso-legal", label: "Aviso legal" },
   { href: "/terminos-servicios", label: "Términos y servicios" },
   { href: "/privacidad", label: "Privacidad" },
   { href: "/cookies", label: "Cookies" },
+  { href: "/desistimiento", label: "Desistimiento y reembolsos" },
 ];
 
 export default function Footer() {
   return (
     <footer className="border-t border-border bg-white">
       <div className="max-w-6xl mx-auto px-6 py-10">
-        <div className="grid gap-10 md:grid-cols-3">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <div className="flex items-center gap-2.5">
               <Image
@@ -49,6 +53,11 @@ export default function Footer() {
                 </li>
               ))}
             </ul>
+          </div>
+
+          <div>
+            <h3 className="text-xs font-bold uppercase tracking-wider">Redes</h3>
+            <SocialLinks />
           </div>
 
           <div>
