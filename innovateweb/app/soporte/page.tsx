@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { LEGAL_INFO } from "../lib/legal";
 
 export default function Soporte() {
   const [loading, setLoading] = useState(false);
@@ -216,9 +217,12 @@ export default function Soporte() {
         </p>
         <p className="mt-3 text-sm leading-relaxed text-muted">
           Puedes solicitar la hoja de reclamaciones correspondiente conforme a la
-          normativa de la comunidad autónoma donde radica el titular. También
-          puedes acudir a la oficina de consumo de tu localidad o comunidad
-          autónoma y consultar la{" "}
+          normativa de{" "}
+          {LEGAL_INFO.comunidad
+            ? `la comunidad autónoma de ${LEGAL_INFO.comunidad}`
+            : "la comunidad autónoma donde radica el titular"}
+          . También puedes acudir a la oficina de consumo de tu localidad o
+          comunidad autónoma y consultar la{" "}
           <Link
             href="/desistimiento"
             className="font-semibold text-brand hover:text-brand-hover"

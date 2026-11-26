@@ -233,9 +233,12 @@ export default function TerminosServicios() {
             {LEGAL_INFO.email}
           </a>{" "}
           y responderemos en un plazo máximo de 10 días hábiles. Puedes solicitar
-          la hoja de reclamaciones correspondiente conforme a la normativa de la
-          comunidad autónoma donde radica el titular. También puedes acudir a la
-          oficina de consumo de tu localidad o comunidad autónoma.
+          la hoja de reclamaciones correspondiente conforme a la normativa de{" "}
+          {LEGAL_INFO.comunidad
+            ? `la comunidad autónoma de ${LEGAL_INFO.comunidad}`
+            : "la comunidad autónoma donde radica el titular"}
+          . También puedes acudir a la oficina de consumo de tu localidad o
+          comunidad autónoma.
         </p>
         <p>
           Salvo que se indique expresamente lo contrario, Innovate Academy no
