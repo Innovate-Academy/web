@@ -1,6 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  async redirects() {
+    return [
+      {
+        source: "/terminos-legales",
+        destination: "/aviso-legal",
+        permanent: true,
+      },
+    ];
+  },
   images: {
     unoptimized: true,
   },

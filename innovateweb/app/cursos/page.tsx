@@ -37,6 +37,7 @@ export default function Cursos() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [modalError, setModalError] = useState<string | null>(null);
+  const [acepta, setAcepta] = useState(false);
   const [session, setSession] = useState<{
     name: string;
     email: string;
@@ -161,6 +162,7 @@ export default function Cursos() {
                         setSelectedCurso(curso);
                         setSubmitted(false);
                         setModalError(null);
+                        setAcepta(false);
                         setModalOpen(true);
                       }}
                       className="mt-5 w-full rounded-lg bg-brand py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-hover"
@@ -379,12 +381,43 @@ export default function Cursos() {
                   <p className="text-xs leading-relaxed text-muted">
                     Al enviar, tu inscripción quedará en estado{" "}
                     <strong className="text-foreground">En espera</strong> hasta
-                    que el equipo la active.
+                    que el equipo la active. Usaremos tus datos para gestionar la
+                    inscripción y el curso.
                   </p>
+
+                  <label className="flex items-start gap-2 text-[11px] leading-relaxed text-muted">
+                    <input
+                      type="checkbox"
+                      checked={acepta}
+                      onChange={(event) => setAcepta(event.target.checked)}
+                      required
+                      className="mt-0.5 h-3.5 w-3.5 shrink-0 accent-blue-600"
+                    />
+                    <span>
+                      Declaro que tengo 18 años o soy el padre, madre o tutor
+                      legal, y he leído y acepto las{" "}
+                      <Link
+                        href="/terminos-servicios"
+                        target="_blank"
+                        className="font-semibold text-brand hover:text-brand-hover"
+                      >
+                        Condiciones de contratación
+                      </Link>{" "}
+                      y la{" "}
+                      <Link
+                        href="/privacidad"
+                        target="_blank"
+                        className="font-semibold text-brand hover:text-brand-hover"
+                      >
+                        Política de privacidad
+                      </Link>
+                      .
+                    </span>
+                  </label>
 
                   <button
                     type="submit"
-                    disabled={submitting}
+                    disabled={submitting || !acepta}
                     className="w-full rounded-lg bg-brand py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-hover disabled:opacity-60"
                   >
                     {submitting ? "Enviando..." : "Enviar inscripción"}

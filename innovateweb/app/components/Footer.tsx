@@ -6,12 +6,15 @@ const ACADEMIA = [
   { href: "/mi-curso", label: "Mi Curso" },
   { href: "/soporte", label: "Soporte" },
   { href: "/postula", label: "Postulaciones" },
+  { href: "/familias", label: "Familias" },
 ];
 
 const LEGAL = [
+  { href: "/aviso-legal", label: "Aviso legal" },
   { href: "/terminos-servicios", label: "Términos y servicios" },
   { href: "/privacidad", label: "Privacidad" },
   { href: "/cookies", label: "Cookies" },
+  { href: "/desistimiento", label: "Desistimiento y reembolsos" },
 ];
 
 export default function Footer() {

@@ -327,6 +327,18 @@ export default function Postula() {
                     </p>
                   )}
 
+                  <p className="mt-4 text-[11px] leading-relaxed text-muted">
+                    Usaremos tu nombre, correo y área de interés para valorar tu
+                    candidatura. Más información en la{" "}
+                    <Link
+                      href="/privacidad"
+                      className="font-semibold text-brand hover:text-brand-hover"
+                    >
+                      Política de privacidad
+                    </Link>
+                    .
+                  </p>
+
                   <div className="mt-6 flex flex-col gap-3 sm:flex-row-reverse">
                     <button
                       type="submit"
