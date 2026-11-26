@@ -38,6 +38,7 @@ export const SOCIALS: SocialNetwork[] = [
   {
     name: "Kick",
     handle: "innovate_acsite",
-    href: "https://kick.com/innovate_acsite",
+    // Kick convierte las barras bajas en guiones en la URL del canal.
+    href: "https://kick.com/innovate-acsite",
   },
 ];
