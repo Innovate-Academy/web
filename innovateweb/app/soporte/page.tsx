@@ -100,7 +100,7 @@ export default function Soporte() {
               type="text"
               placeholder="Juan Pérez"
               required
-              className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-all"
+              className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-all sm:text-sm"
             />
           </div>
           <div>
@@ -116,7 +116,7 @@ export default function Soporte() {
               type="email"
               placeholder="juan@ejemplo.com"
               required
-              className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-all"
+              className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-all sm:text-sm"
             />
           </div>
         </div>
@@ -133,7 +133,7 @@ export default function Soporte() {
             rows={5}
             placeholder="Cuéntanos cómo podemos ayudarte..."
             required
-            className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-all"
+            className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-all sm:text-sm"
           />
         </div>
         <p className="mb-6 text-[11px] leading-relaxed text-muted">

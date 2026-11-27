@@ -97,30 +97,54 @@ export function LegalTable({
   rows: ReactNode[][];
 }) {
   return (
-    <div className="overflow-x-auto rounded-lg border border-border">
-      <table className="w-full min-w-[560px] border-collapse text-left text-xs">
-        <thead className="bg-panel text-foreground">
-          <tr>
-            {columns.map((column) => (
-              <th key={column} className="px-3 py-2 font-semibold">
-                {column}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-border">
-          {rows.map((row, rowIndex) => (
-            <tr key={rowIndex} className="align-top">
-              {row.map((cell, cellIndex) => (
-                <td key={cellIndex} className="px-3 py-2">
-                  {cell}
-                </td>
+    <>
+      <div className="hidden overflow-x-auto rounded-lg border border-border sm:block">
+        <table className="w-full min-w-[560px] border-collapse text-left text-xs">
+          <thead className="bg-panel text-foreground">
+            <tr>
+              {columns.map((column) => (
+                <th key={column} className="px-3 py-2 font-semibold">
+                  {column}
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {rows.map((row, rowIndex) => (
+              <tr key={rowIndex} className="align-top">
+                {row.map((cell, cellIndex) => (
+                  <td key={cellIndex} className="px-3 py-2">
+                    {cell}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="space-y-3 sm:hidden">
+        {rows.map((row, rowIndex) => (
+          <div
+            key={rowIndex}
+            className="rounded-lg border border-border bg-white p-4"
+          >
+            <dl className="space-y-3">
+              {row.map((cell, cellIndex) => (
+                <div key={cellIndex}>
+                  <dt className="text-[10px] font-semibold uppercase tracking-wider text-brand">
+                    {columns[cellIndex] ?? ""}
+                  </dt>
+                  <dd className="mt-1 text-xs leading-relaxed text-muted">
+                    {cell}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        ))}
+      </div>
+    </>
   );
 }
 

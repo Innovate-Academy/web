@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import Faq from "./components/Faq";
+import HomeActions from "./components/HomeActions";
 
 const CURSOS_RECOMENDADOS = [
   {
@@ -53,26 +54,7 @@ export default function Home() {
               clases en vivo, seguimiento cercano y proyectos reales.
             </p>
 
-            <div className="mt-7 flex flex-wrap items-center gap-3">
-              <Link
-                href="/cursos"
-                className="rounded-lg bg-brand px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-hover"
-              >
-                Ver cursos
-              </Link>
-              <Link
-                href="/login"
-                className="rounded-lg border border-border bg-white px-5 py-3 text-sm font-semibold text-foreground transition-colors hover:border-brand/30 hover:bg-panel"
-              >
-                Iniciar sesión con Google
-              </Link>
-              <Link
-                href="/postula"
-                className="rounded-lg border border-border bg-white px-5 py-3 text-sm font-semibold text-foreground transition-colors hover:border-brand/30 hover:bg-panel"
-              >
-                Únete a nuestro Equipo
-              </Link>
-            </div>
+            <HomeActions />
 
             <p className="mt-6 text-xs text-muted">
               Desde cero · Paso a paso · Proyectos reales

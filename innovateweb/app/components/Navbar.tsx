@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 
 const LockIcon = () => (
   <svg
-    className="w-4 h-4 ml-1 text-muted"
+    className="ml-1 h-4 w-4 text-muted"
     fill="none"
     stroke="currentColor"
     viewBox="0 0 24 24"
@@ -72,8 +72,8 @@ export default function Navbar() {
 
   return (
     <header className="border-b border-border bg-background">
-      <nav className="max-w-6xl mx-auto flex h-16 items-center justify-between px-6">
-        <Link href="/" className="flex items-center gap-2.5">
+      <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-4 sm:px-6">
+        <Link href="/" className="flex min-w-0 items-center gap-2.5">
           <Image
             src="/LogoInnovateAcademy.png"
             alt="Innovate Academy"
@@ -82,7 +82,7 @@ export default function Navbar() {
             className="rounded-md"
             priority
           />
-          <span className="text-lg font-semibold tracking-tight">
+          <span className="hidden text-lg font-semibold tracking-tight sm:inline">
             Innovate Academy
           </span>
         </Link>
@@ -91,7 +91,7 @@ export default function Navbar() {
           {LINKS.map((link) => (
             <li key={link.href}>
               {link.requiresAuth && !user && !loading ? (
-                <span className="flex items-center gap-1 text-muted hover:text-foreground cursor-not-allowed">
+                <span className="flex cursor-not-allowed items-center gap-1 text-muted hover:text-foreground">
                   <Link
                     href="/login"
                     className="text-muted hover:text-foreground"
@@ -123,51 +123,51 @@ export default function Navbar() {
           Comunidad
         </Link>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           {loading ? (
-            <div className="w-2 h-2 rounded-full bg-brand animate-pulse" />
+            <div className="h-2 w-2 animate-pulse rounded-full bg-brand" />
           ) : user ? (
             <div className="relative">
               <button
                 onClick={() => setUserMenuOpen((v) => !v)}
-                className="flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
+                className="flex items-center gap-2 rounded-full bg-gray-100 px-2 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200 sm:px-3"
               >
                 {user.picture ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={user.picture}
                     alt={user.name}
-                    className="w-6 h-6 rounded-full object-cover"
+                    className="h-6 w-6 rounded-full object-cover"
                   />
                 ) : (
-                  <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-xs font-bold">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-600">
                     {user.name.charAt(0).toUpperCase()}
                   </div>
                 )}
-                <span className="ml-2 truncate max-w-[120px]">
+                <span className="ml-1 hidden max-w-[120px] truncate sm:inline">
                   {user.name}
                 </span>
               </button>
 
               {userMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 rounded-lg border border-border bg-white p-2 shadow-lg z-50">
+                <div className="absolute right-0 z-50 mt-2 w-48 rounded-lg border border-border bg-white p-2 shadow-lg">
                   <a
                     href="/dashboard"
                     onClick={() => setUserMenuOpen(false)}
-                    className="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded"
+                    className="block rounded px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
                     Mi panel
                   </a>
                   <a
                     href="/perfil"
                     onClick={() => setUserMenuOpen(false)}
-                    className="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded"
+                    className="block rounded px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
                     Ver perfil
                   </a>
                   <button
                     onClick={handleLogout}
-                    className="block w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded"
+                    className="block w-full rounded px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50"
                   >
                     Cerrar sesión
                   </button>
@@ -177,43 +177,61 @@ export default function Navbar() {
           ) : (
             <a
               href="/login"
-              className="rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-hover transition-colors"
+              className="whitespace-nowrap rounded-lg bg-brand px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-brand-hover sm:px-4 sm:py-2.5 sm:text-sm"
             >
-              Iniciar sesión
+              <span className="sm:hidden">Entrar</span>
+              <span className="hidden sm:inline">Iniciar sesión</span>
             </a>
           )}
-        </div>
 
-        <button
-          type="button"
-          onClick={() => setMenuOpen((value) => !value)}
-          aria-expanded={menuOpen}
-          className="text-sm font-semibold text-brand md:hidden"
-        >
-          Menú {menuOpen ? "−" : "+"}
-        </button>
+          <button
+            type="button"
+            onClick={() => setMenuOpen((value) => !value)}
+            aria-expanded={menuOpen}
+            aria-label={menuOpen ? "Cerrar menú" : "Abrir menú"}
+            className="flex h-11 w-11 items-center justify-center rounded-lg text-brand transition-colors hover:bg-panel md:hidden"
+          >
+            <svg
+              className="h-5 w-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              aria-hidden="true"
+            >
+              {menuOpen ? (
+                <path d="M6 6l12 12M18 6L6 18" />
+              ) : (
+                <path d="M4 7h16M4 12h16M4 17h16" />
+              )}
+            </svg>
+          </button>
+        </div>
       </nav>
 
       {menuOpen && (
-        <ul className="flex flex-col gap-3 border-t border-border px-6 py-4 text-sm md:hidden">
+        <ul className="flex flex-col gap-1 border-t border-border px-4 py-3 text-sm md:hidden">
           {LINKS.map((link) => (
             <li key={link.href}>
               {link.requiresAuth && !user && !loading ? (
-                <span className="flex items-center gap-1 text-muted cursor-not-allowed">
-                  <a
-                    href="/login"
-                    onClick={() => setMenuOpen(false)}
-                    className="text-muted"
-                  >
-                    {link.label}
-                  </a>
+                <a
+                  href="/login"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center rounded-lg px-3 py-2.5 text-muted hover:bg-panel hover:text-foreground"
+                >
+                  {link.label}
                   <LockIcon />
-                </span>
+                </a>
               ) : (
                 <Link
                   href={link.href}
                   onClick={() => setMenuOpen(false)}
-                  className={pathname === link.href ? "font-semibold text-brand" : "text-muted"}
+                  className={`block rounded-lg px-3 py-2.5 ${
+                    pathname === link.href
+                      ? "bg-panel font-semibold text-brand"
+                      : "text-muted hover:bg-panel hover:text-foreground"
+                  }`}
                 >
                   {link.label}
                 </Link>
@@ -221,27 +239,31 @@ export default function Navbar() {
             </li>
           ))}
           <li>
-            <Link href="/comunidad" onClick={() => setMenuOpen(false)} className="text-muted">
+            <Link
+              href="/comunidad"
+              onClick={() => setMenuOpen(false)}
+              className="block rounded-lg px-3 py-2.5 text-muted hover:bg-panel hover:text-foreground"
+            >
               Comunidad
             </Link>
           </li>
           {loading || !user ? (
-            <li>
+            <li className="border-t border-border pt-2">
               <a
                 href="/login"
                 onClick={() => setMenuOpen(false)}
-                className="block px-3 py-2 text-sm font-semibold text-brand hover:bg-gray-100 rounded"
+                className="block rounded-lg bg-brand px-3 py-2.5 text-center font-semibold text-white"
               >
-                Iniciar sesión
+                Iniciar sesión con Google
               </a>
             </li>
           ) : (
             <>
-              <li>
+              <li className="border-t border-border pt-2">
                 <a
                   href="/dashboard"
                   onClick={() => setMenuOpen(false)}
-                  className="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded"
+                  className="block rounded-lg px-3 py-2.5 text-gray-700 hover:bg-gray-100"
                 >
                   Mi panel
                 </a>
@@ -250,7 +272,7 @@ export default function Navbar() {
                 <a
                   href="/perfil"
                   onClick={() => setMenuOpen(false)}
-                  className="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded"
+                  className="block rounded-lg px-3 py-2.5 text-gray-700 hover:bg-gray-100"
                 >
                   Ver perfil
                 </a>
@@ -258,7 +280,7 @@ export default function Navbar() {
               <li>
                 <button
                   onClick={handleLogout}
-                  className="block w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded"
+                  className="block w-full rounded-lg px-3 py-2.5 text-left text-red-600 hover:bg-red-50"
                 >
                   Cerrar sesión
                 </button>
