@@ -41,7 +41,7 @@ const CARD_HOVER =
   "transition duration-[400ms] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform hover:-translate-y-1 hover:scale-[1.015] hover:border-brand/30 hover:shadow-[0_20px_45px_-12px_rgba(15,23,42,0.28)] hover:ring-1 hover:ring-brand/10 motion-reduce:transform-none motion-reduce:transition-none";
 
 const INPUT_CLASS =
-  "w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition-all focus:border-brand focus:ring-2 focus:ring-brand";
+  "w-full rounded-lg border border-gray-300 px-4 py-3 text-base outline-none transition-all focus:border-brand focus:ring-2 focus:ring-brand sm:text-sm";
 
 
 export default function Postula() {
